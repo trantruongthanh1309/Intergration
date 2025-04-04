@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cài Đặt</title>
+
+    <!-- Bootstrap 5 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <style>
+      body {
+        font-family: "Arial", sans-serif;
+        background-color: #f4f7fa;
+        margin: 0;
+        padding: 0;
+        display: flex;
+      }
+
+      /* Sidebar */
+      .sidebar {
+        width: 250px;
+        background-color: #2b3a42;
+        height: 100vh;
+        padding-top: 50px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        box-shadow: 4px 0 12px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+      }
+
+      .sidebar a {
+        display: block;
+        padding: 15px;
+        font-size: 18px;
+        color: white;
+        text-decoration: none;
+        margin: 10px 0;
+        border-radius: 5px;
+        transition: background-color 0.3s, transform 0.3s;
+      }
+
+      .sidebar a:hover {
+        background-color: #2980b9;
+        transform: scale(1.05);
+      }
+
+      .active {
+        background-color: #95b7da;
+      }
+
+      /* Content */
+      .content {
+        margin-left: 260px;
+        padding: 20px;
+        width: calc(100% - 260px);
+        background-color: #ecf0f1;
+        color: black;
+        overflow: auto;
+      }
+
+      .container {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        color: black;
+      }
+
+      h1 {
+        font-weight: bold;
+        color: #2c3e50;
+        font-size: 30px;
+        margin-bottom: 20px;
+      }
+
+      h1:hover {
+        color: #3498db;
+      }
+
+      /* Tab Styles */
+      .nav-tabs .nav-link {
+        font-size: 16px;
+        font-weight: bold;
+        color: #34495e;
+        background-color: #ecf0f1;
+        border: 2px solid #ddd;
+        transition: background-color 0.3s;
+      }
+
+      .nav-tabs .nav-link:hover {
+        background-color: #3498db;
+        color: white;
+      }
+
+      .nav-tabs .nav-link.active {
+        background-color: #3498db;
+        color: white;
+        border-color: #3498db;
+      }
+
+      /* Form Styles */
+      .form-group label {
+        font-weight: bold;
+        color: #2c3e50;
+        font-size: 16px;
+      }
+
+      .form-control {
+        font-size: 14px;
+        padding: 15px;
+        border-radius: 8px;
+        border: 2px solid #ddd;
+        transition: border-color 0.3s;
+        background-color: #ffffff;
+      }
+
+      .form-control:focus {
+        border-color: #3498db;
+        box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+      }
+
+      /* Button Styles */
+      .btn-save,
+      .btn-cancel {
+        background-color: #3498db;
+        padding: 10px 20px;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s;
+      }
+
+      .btn-save:hover,
+      .btn-cancel:hover {
+        background-color: #2980b9;
+      }
+
+      .btn-cancel {
+        background-color: #e74c3c;
+      }
+
+      .btn-cancel:hover {
+        background-color: #c0392b;
+      }
+
+      /* Spacer between sections */
+      .mt-4 {
+        margin-top: 20px;
+      }
+
+      /* Card Styles */
+      .card {
+        border-radius: 15px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+      }
+
+      .card-header {
+        background-color: #2a5298;
+        color: white;
+        padding: 12px;
+        font-size: 18px;
+        font-weight: bold;
+        border-radius: 15px 15px 0 0;
+      }
+
+      .card-body {
+        background-color: #f1f1f1;
+        padding: 20px;
+        border-radius: 0 0 15px 15px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <h2 style="text-align: center; color: white; font-weight: bold">Menu</h2>
+      <a href="tc"><i class="fas fa-home"></i> Trang Chủ</a>
+      <a href="{{ url_for('quan_li_tai_chinh') }}"
+        ><i class="fas fa-chart-line"></i> Quản Lí Tài Chính</a
+      >
+      <a href="{{ url_for('quan_li_nhan_su') }}"
+        ><i class="fas fa-users"></i> Quản Lí Nhân Sự</a
+      >
+      <a href="{{ url_for('bao_cao_tai_chinh') }}"
+        ><i class="fas fa-chart-line"></i> Báo Cáo Tài Chính</a
+      >
+      <a href="{{ url_for('cai_dat') }}" class="active"
+        ><i class="fas fa-cogs"></i> Cài Đặt</a
+      >
+      <a href="{{ url_for('ho_so') }}"><i class="fas fa-file"></i> Hồ Sơ</a>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <div class="container">
+        <h1><i class="fas fa-cogs"></i> Cài Đặt</h1>
+
+        <!-- Tab Navigation -->
+        <ul class="nav nav-tabs" id="settingsTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <a
+              class="nav-link active"
+              id="account-tab"
+              data-bs-toggle="tab"
+              href="#account"
+              role="tab"
+              aria-controls="account"
+              aria-selected="true"
+              >Tài Khoản</a
+            >
+          </li>
+          <li class="nav-item" role="presentation">
+            <a
+              class="nav-link"
+              id="security-tab"
+              data-bs-toggle="tab"
+              href="#security"
+              role="tab"
+              aria-controls="security"
+              aria-selected="false"
+              >Bảo Mật</a
+            >
+          </li>
+          <li class="nav-item" role="presentation">
+            <a
+              class="nav-link"
+              id="notifications-tab"
+              data-bs-toggle="tab"
+              href="#notifications"
+              role="tab"
+              aria-controls="notifications"
+              aria-selected="false"
+              >Thông Báo</a
+            >
+          </li>
+          <li class="nav-item" role="presentation">
+            <a
+              class="nav-link"
+              id="appearance-tab"
+              data-bs-toggle="tab"
+              href="#appearance"
+              role="tab"
+              aria-controls="appearance"
+              aria-selected="false"
+              >Giao Diện</a
+            >
+          </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="settingsTabsContent">
+          <!-- Account Settings -->
+          <div
+            class="tab-pane fade show active"
+            id="account"
+            role="tabpanel"
+            aria-labelledby="account-tab"
+          >
+            <h4>Thông tin tài khoản</h4>
+            <div class="form-group">
+              <label for="username">Tên người dùng</label>
+              <input
+                type="text"
+                class="form-control"
+                id="username"
+                placeholder="Nhập tên người dùng"
+              />
+            </div>
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input
+                type="email"
+                class="form-control"
+                id="email"
+                placeholder="Nhập email"
+              />
+            </div>
+            <div class="form-group">
+              <label for="password">Mật khẩu mới</label>
+              <input
+                type="password"
+                class="form-control"
+                id="password"
+                placeholder="Nhập mật khẩu mới"
+              />
+            </div>
+            <div class="d-flex justify-content-end mt-4">
+              <button class="btn-save">Lưu Thay Đổi</button>
+              <button class="btn-cancel ms-3">Hủy Bỏ</button>
+            </div>
+          </div>
+
+          <!-- Security Settings -->
+          <div
+            class="tab-pane fade"
+            id="security"
+            role="tabpanel"
+            aria-labelledby="security-tab"
+          >
+            <h4>Bảo mật tài khoản</h4>
+            <div class="form-group">
+              <label for="twoFactor">Xác thực hai yếu tố</label>
+              <select class="form-control" id="twoFactor">
+                <option>Đang bật</option>
+                <option>Đang tắt</option>
+              </select>
+            </div>
+            <div class="d-flex justify-content-end mt-4">
+              <button class="btn-save">Lưu Thay Đổi</button>
+              <button class="btn-cancel ms-3">Hủy Bỏ</button>
+            </div>
+          </div>
+
+          <!-- Notification Settings -->
+          <div
+            class="tab-pane fade"
+            id="notifications"
+            role="tabpanel"
+            aria-labelledby="notifications-tab"
+          >
+            <h4>Cài đặt thông báo</h4>
+            <div class="form-group">
+              <label for="emailNotifications">Thông báo qua email</label>
+              <select class="form-control" id="emailNotifications">
+                <option>Đang bật</option>
+                <option>Đang tắt</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="smsNotifications">Thông báo qua SMS</label>
+              <select class="form-control" id="smsNotifications">
+                <option>Đang bật</option>
+                <option>Đang tắt</option>
+              </select>
+            </div>
+            <div class="d-flex justify-content-end mt-4">
+              <button class="btn-save">Lưu Thay Đổi</button>
+              <button class="btn-cancel ms-3">Hủy Bỏ</button>
+            </div>
+          </div>
+
+          <!-- Appearance Settings -->
+          <div
+            class="tab-pane fade"
+            id="appearance"
+            role="tabpanel"
+            aria-labelledby="appearance-tab"
+          >
+            <h4>Cài đặt giao diện</h4>
+            <div class="form-group">
+              <label for="theme">Chọn chủ đề</label>
+              <select class="form-control" id="theme">
+                <option>Ánh sáng</option>
+                <option>Ánh tối</option>
+              </select>
+            </div>
+            <div class="d-flex justify-content-end mt-4">
+              <button class="btn-save">Lưu Thay Đổi</button>
+              <button class="btn-cancel ms-3">Hủy Bỏ</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "folders": [
+	{
+		"name": "Lab3",
+		"path": ".."
+	},
+	{
+		"name": "CDIO2_BarberHair-main",
+		"path": "../../CDIO2_BarberHair-main"
+	}
+],
+  "settings": {
+    "liveServer.settings.multiRootWorkspaceName": "Lab3"
+  }
+}

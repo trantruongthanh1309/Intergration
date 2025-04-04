@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cập Nhật Nhân Viên</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* Background gradient cực phẩm */
+        body {
+            background: linear-gradient(to right, #1e3c72, #2a5298);
+            font-family: 'Arial', sans-serif;
+            color: white;
+        }
+
+        /* Container chính - Glassmorphism (nền kính trong suốt) */
+        .container {
+            max-width: 600px;
+            margin-top: 50px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .container:hover {
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Tiêu đề */
+        h2 {
+            text-align: center;
+            font-weight: bold;
+            color: #f8f9fa;
+            margin-bottom: 20px;
+        }
+
+        /* Hiệu ứng hover input */
+        .form-control, .form-select {
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #00f2fe;
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+        }
+
+        /* Nút cập nhật */
+        .btn-update {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 123, 255, 0.8);
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            text-align: center;
+            border: none;
+        }
+
+        .btn-update:hover {
+            background: rgba(0, 123, 255, 1);
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.5);
+        }
+
+        /* Nút quay lại */
+        .btn-cancel {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 69, 58, 0.8);
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            text-align: center;
+            border: none;
+            margin-top: 10px;
+        }
+
+        .btn-cancel:hover {
+            background: rgba(255, 69, 58, 1);
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(255, 69, 58, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2><i class="fas fa-user-edit"></i> Cập Nhật Nhân Viên</h2>
+        <form method="POST">
+            <div class="mb-3">
+                <label class="form-label">Họ và Tên:</label>
+                <input type="text" class="form-control" name="ho_ten" value="{{ nhan_vien.HoTen }}" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Ngày Sinh:</label>
+                <input type="date" class="form-control" name="ngay_sinh" value="{{ nhan_vien.NgaySinh }}">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Giới Tính:</label>
+                <select class="form-select" name="gioi_tinh">
+                    <option value="Nam" {% if nhan_vien.GioiTinh == 'Nam' %} selected {% endif %}>Nam</option>
+                    <option value="Nữ" {% if nhan_vien.GioiTinh == 'Nữ' %} selected {% endif %}>Nữ</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Địa Chỉ:</label>
+                <input type="text" class="form-control" name="dia_chi" value="{{ nhan_vien.DiaChi }}">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Số Điện Thoại:</label>
+                <input type="text" class="form-control" name="so_dien_thoai" value="{{ nhan_vien.SoDienThoai }}">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Email:</label>
+                <input type="email" class="form-control" name="email" value="{{ nhan_vien.Email }}">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Ngày Vào Làm:</label>
+                <input type="date" class="form-control" name="ngay_vao_lam" value="{{ nhan_vien.NgayVaoLam }}">
+            </div>
+
+            <button type="submit" class="btn-update">
+                <i class="fas fa-sync-alt"></i> Cập Nhật
+            </button>
+            <a href="{{ url_for('in_danh_sach') }}" class="btn-cancel">
+                <i class="fas fa-arrow-left"></i> Hủy
+            </a>
+        </form>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quản Lý Nhân Viên</title>
+
+    <!-- Bootstrap 5 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <style>
+      body {
+        font-family: "Arial", sans-serif;
+        background-color: #f8f9fa; /* Nền trắng cho toàn bộ trang */
+        margin: 0;
+        padding: 0;
+        display: flex;
+      }
+
+      /* Sidebar */
+      .sidebar {
+        width: 250px;
+        background-color: #2a3b4c;
+        height: 100vh;
+        padding-top: 50px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .sidebar a {
+        display: block;
+        padding: 15px;
+        font-size: 18px;
+        color: white;
+        text-decoration: none;
+        margin: 10px 0;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+      }
+
+      .sidebar a:hover {
+        background-color: #475f6a;
+      }
+
+      .active {
+        background-color: #007bff;
+      }
+
+      /* Content */
+      .content {
+        margin-left: 260px;
+        padding: 20px;
+        width: calc(100% - 260px);
+        background-color: white; /* Màu nền trắng cho phần nội dung */
+        color: black; /* Chữ màu đen để dễ đọc */
+      }
+
+      .container {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        color: black;
+      }
+
+      h1 {
+        font-weight: bold;
+        color: #343a40; /* Chỉnh màu chữ thành màu đen sáng */
+      }
+
+      .form-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .form-header input,
+      .form-header select {
+        width: 300px;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        font-size: 16px;
+      }
+
+      .form-header button {
+        padding: 10px 20px;
+        background-color: #17a2b8;
+        color: white;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+      }
+
+      .form-header button:hover {
+        background-color: #117a8b;
+      }
+
+      .table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+
+      .table th,
+      .table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+
+      .table th {
+        background-color: #2a5298;
+        color: white;
+      }
+
+      .table td {
+        background-color: rgba(255, 255, 255, 0.2);
+      }
+
+      .table tbody tr:hover {
+        background-color: rgba(255, 255, 255, 0.4);
+      }
+
+      .btn-export,
+      .btn-add {
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+      }
+
+      .btn-export:hover,
+      .btn-add:hover {
+        background-color: #0056b3;
+      }
+    </style>
+  </head>
+  <div>
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <h2 style="text-align: center; color: white; font-weight: bold">Menu</h2>
+      <a href="tc" ><i class="fas fa-home"></i> Trang Chủ</a>
+      <a href="{{ url_for('quan_li_tai_chinh') }}"
+        ><i class="fas fa-chart-line"></i> Quản Lí Tài Chính</a
+      >
+      <a href="{{ url_for('quan_li_nhan_su') }}"
+      class="active" ><i class="fas fa-users"></i> Quản Lí Nhân Sự</a
+      >
+      <a href="{{ url_for('bao_cao_tai_chinh') }}"
+        ><i class="fas fa-chart-line"></i> Báo Cáo Tài Chính</a
+      >
+      <a href="{{ url_for('cai_dat') }}"><i class="fas fa-cogs"></i> Cài Đặt</a>
+      <a href="{{ url_for('ho_so') }}"><i class="fas fa-file"></i> Hồ Sơ</a>
+    </div>
+    <!-- Content -->
+    <div class="content">
+      <div class="container">
+        <h1><i class="fas fa-users"></i> Quản Lý Nhân Viên</h1>
+
+        <div class="form-header">
+          <input
+            type="text"
+            placeholder="Tìm kiếm nhân viên"
+            class="form-control"
+          />
+          <select class="form-control">
+            <option>Trang thái làm việc</option>
+            <option>Hoạt động</option>
+            <option>Không hoạt động</option>
+          </select>
+          <!-- Trigger modal when the button is clicked -->
+          <button
+            class="btn-add"
+            data-bs-toggle="modal"
+            data-bs-target="#addEmployeeModal"
+          >
+            Thêm Nhân Viên Mới
+          </button>
+        </div>
+
+        <table class="table table-striped table-hover" id="employeeTable">
+          <thead>
+            <tr>
+              <th>Mã NV</th>
+              <th>Họ Tên</th>
+              <th>Ngày Sinh</th>
+              <th>Giới Tính</th>
+              <th>Số Điện Thoại</th>
+              <th>Email</th>
+              <th>Ngày Vào Làm</th>
+              <th>Hành Động</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for nv in nhan_viens %}
+            <tr>
+              <td>{{ nv.MaNV }}</td>
+              <td>{{ nv.HoTen }}</td>
+              <td>{{ nv.NgaySinh }}</td>
+              <td>{{ nv.GioiTinh }}</td>
+              <td>{{ nv.SoDienThoai }}</td>
+              <td>{{ nv.Email }}</td>
+              <td>{{ nv.NgayVaoLam }}</td>
+              <td>
+                <a
+                  href="#"
+                  class="btn btn-warning btn-sm"
+                  data-bs-toggle="modal"
+                  data-bs-target="#updateEmployeeModal"
+                  onclick="setEmployeeData('{{ nv.MaNV }}', '{{ nv.HoTen }}', '{{ nv.NgaySinh }}', '{{ nv.GioiTinh }}', '{{ nv.DiaChi }}', '{{ nv.SoDienThoai }}', '{{ nv.Email }}', '{{ nv.NgayVaoLam }}')"
+                >
+                  <i class="fas fa-edit"></i> Cập Nhật
+                </a>
+
+                <a
+                  href="{{ url_for('xoa_nhan_vien', ma_nv=nv.MaNV) }}"
+                  class="btn btn-danger btn-sm"
+                  onclick="return confirm('Bạn có chắc chắn muốn xóa nhân viên này?');"
+                >
+                  <i class="fas fa-trash"></i> Xóa
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  <!-- Modal Cập Nhật Nhân Viên -->
+<div
+  class="modal fade"
+  id="updateEmployeeModal"
+  tabindex="-1"
+  aria-labelledby="updateEmployeeModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="updateEmployeeModalLabel">Cập Nhật Nhân Viên</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Form cập nhật nhân viên -->
+          <div class="mb-3">
+            <label class="form-label">Họ và Tên:</label>
+            <input type="text" class="form-control" name="ho_ten" id="ho_ten" required />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Ngày Sinh:</label>
+            <input type="date" class="form-control" name="ngay_sinh" id="ngay_sinh" />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Giới Tính:</label>
+            <select class="form-select" name="gioi_tinh" id="gioi_tinh">
+              <option value="Nam">Nam</option>
+              <option value="Nữ">Nữ</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Địa Chỉ:</label>
+            <input type="text" class="form-control" name="dia_chi" id="dia_chi" />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Số Điện Thoại:</label>
+            <input type="text" class="form-control" name="so_dien_thoai" id="so_dien_thoai" />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Email:</label>
+            <input type="email" class="form-control" name="email" id="email" />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Ngày Vào Làm:</label>
+            <input type="date" class="form-control" name="ngay_vao_lam" id="ngay_vao_lam" />
+          </div>
+
+          <button type="submit" class="btn-update">
+            <i class="fas fa-sync-alt"></i> Cập Nhật
+          </button>
+        </form>
+       
+      </div>
+    </div>
+  </div>
+</div>
+
+    <!-- Modal Thêm Nhân Viên Mới -->
+    <div
+      class="modal fade"
+      id="addEmployeeModal"
+      tabindex="-1"
+      aria-labelledby="addEmployeeModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="addEmployeeModalLabel">
+              Thêm Nhân Viên Mới
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form method="POST" action="{{ url_for('them_nhan_vien') }}">
+              <div class="mb-3">
+                <label class="form-label">Họ và Tên:</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="ho_ten"
+                  id="ho_ten"
+                  required
+                />
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Ngày Sinh:</label>
+                <input
+                  type="date"
+                  class="form-control"
+                  name="ngay_sinh"
+                  id="ngay_sinh"
+                />
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Giới Tính:</label>
+                <select class="form-select" name="gioi_tinh" id="gioi_tinh">
+                  <option value="Nam">Nam</option>
+                  <option value="Nữ">Nữ</option>
+                </select>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Địa Chỉ:</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="dia_chi"
+                  id="dia_chi"
+                />
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Số Điện Thoại:</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="so_dien_thoai"
+                  id="so_dien_thoai"
+                />
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Email:</label>
+                <input
+                  type="email"
+                  class="form-control"
+                  name="email"
+                  id="email"
+                />
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Ngày Vào Làm:</label>
+                <input
+                  type="date"
+                  class="form-control"
+                  name="ngay_vao_lam"
+                  id="ngay_vao_lam"
+                />
+              </div>
+
+              <button type="submit" class="btn-submit">
+                <i class="fas fa-plus"></i> Thêm Nhân Viên
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

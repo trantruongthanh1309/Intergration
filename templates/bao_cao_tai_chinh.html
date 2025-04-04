@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Báo Cáo Tài Chính & Nhân Sự</title>
+
+    <!-- Bootstrap 5 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <style>
+      body {
+        font-family: "Arial", sans-serif;
+        background-color: #f8f9fa;
+        margin: 0;
+        padding: 0;
+        display: flex;
+      }
+
+      /* Sidebar */
+      .sidebar {
+        width: 250px;
+        background-color: #34495e;
+        height: 100vh;
+        padding-top: 50px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        box-shadow: 4px 0 12px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+      }
+
+      .sidebar a {
+        display: block;
+        padding: 15px;
+        font-size: 18px;
+        color: white;
+        text-decoration: none;
+        margin: 10px 0;
+        border-radius: 5px;
+        transition: background-color 0.3s, transform 0.3s;
+      }
+
+      .sidebar a:hover {
+        background-color: #2a5298;
+        transform: scale(1.05);
+      }
+
+      .active {
+        background-color: #007bff;
+      }
+
+      /* Content */
+      .content {
+        margin-left: 260px;
+        padding: 20px;
+        width: calc(100% - 260px);
+        background-color: #ecf0f1;
+        color: black;
+        overflow: auto;
+      }
+
+      .container {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        color: black;
+        transition: all 0.3s ease;
+      }
+
+      h1 {
+        font-weight: bold;
+        color: #2c3e50;
+        font-size: 30px;
+        margin-bottom: 20px;
+        transition: color 0.3s ease;
+      }
+
+      h1:hover {
+        color: #3498db;
+      }
+
+      .btn-export {
+        background-color: #3498db;
+        padding: 10px 20px;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      .btn-export:hover {
+        background-color: #2980b9;
+      }
+
+      /* Card Styles */
+      .card {
+        border-radius: 15px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        transition: box-shadow 0.3s ease;
+      }
+
+      .card:hover {
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+      }
+
+      .card-header {
+        background-color: #2a5298;
+        color: white;
+        padding: 12px;
+        font-size: 18px;
+        font-weight: bold;
+        border-radius: 15px 15px 0 0;
+      }
+
+      .card-body {
+        background-color: #f1f1f1;
+        padding: 20px;
+        border-radius: 0 0 15px 15px;
+      }
+
+      /* Table Styles */
+      .table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+      }
+
+      .table th,
+      .table td {
+        padding: 15px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+        transition: background-color 0.3s ease;
+      }
+
+      .table th {
+        background-color: #2980b9;
+        color: white;
+        font-weight: bold;
+      }
+
+      .table tr:hover {
+        background-color: #ecf0f1;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <h2 style="text-align: center; color: white; font-weight: bold">Menu</h2>
+      <a href="tc"><i class="fas fa-home"></i> Trang Chủ</a>
+      <a href="{{ url_for('quan_li_tai_chinh') }}" class="active"
+        ><i class="fas fa-chart-line"></i> Quản Lí Tài Chính</a
+      >
+      <a href="{{ url_for('quan_li_nhan_su') }}"
+        ><i class="fas fa-users"></i> Quản Lí Nhân Sự</a
+      >
+      <a href="{{ url_for('bao_cao_tai_chinh') }}"
+      class="active"><i class="fas fa-chart-line"></i> Báo Cáo Tài Chính</a
+      >
+      <a href="{{ url_for('cai_dat') }}"><i class="fas fa-cogs"></i> Cài Đặt</a>
+      <a href="{{ url_for('ho_so') }}"><i class="fas fa-file"></i> Hồ Sơ</a>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <div class="container">
+        <h1><i class="fas fa-chart-line"></i> Báo Cáo Tài Chính & Nhân Sự</h1>
+
+        <!-- Financial Overview -->
+        <div class="card">
+          <div class="card-header">Tổng Quan Tài Chính</div>
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h5>Tổng doanh thu</h5>
+                <p>15,000,000 VNĐ</p>
+              </div>
+              <div>
+                <h5>Tổng chi phí</h5>
+                <p>8,000,000 VNĐ</p>
+              </div>
+              <div>
+                <h5>Lợi nhuận</h5>
+                <p>7,000,000 VNĐ</p>
+              </div>
+            </div>
+            <button class="btn-export">Xuất Báo Cáo</button>
+          </div>
+        </div>
+
+        <!-- Employee Report -->
+        <div class="card">
+          <div class="card-header">Báo Cáo Nhân Sự</div>
+          <div class="card-body">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Phòng Ban</th>
+                  <th>Tổng Số Nhân Viên</th>
+                  <th>Tình Trạng Công Tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>HR</td>
+                  <td>10</td>
+                  <td>Đang làm việc</td>
+                </tr>
+                <tr>
+                  <td>Kinh doanh</td>
+                  <td>20</td>
+                  <td>Đang làm việc</td>
+                </tr>
+                <tr>
+                  <td>Kế toán</td>
+                  <td>15</td>
+                  <td>Đang làm việc</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Payroll Report -->
+        <div class="card">
+          <div class="card-header">Báo Cáo Tiền Lương</div>
+          <div class="card-body">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Phòng Ban</th>
+                  <th>Tổng Ngân Sách Lương</th>
+                  <th>Lương Trung Bình</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>HR</td>
+                  <td>100,000,000 VNĐ</td>
+                  <td>10,000,000 VNĐ</td>
+                </tr>
+                <tr>
+                  <td>Kinh doanh</td>
+                  <td>200,000,000 VNĐ</td>
+                  <td>10,000,000 VNĐ</td>
+                </tr>
+                <tr>
+                  <td>Kế toán</td>
+                  <td>150,000,000 VNĐ</td>
+                  <td>10,000,000 VNĐ</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Stock Report -->
+        <div class="card">
+          <div class="card-header">Báo Cáo Cổ Tức</div>
+          <div class="card-body">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Cổ Tức</th>
+                  <th>Số Cổ Phiếu</th>
+                  <th>Tình Trạng</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Cổ Tức Định Kỳ</td>
+                  <td>500,000</td>
+                  <td>Cổ đông là nhân viên</td>
+                </tr>
+                <tr>
+                  <td>Cổ Tức Bất Thường</td>
+                  <td>300,000</td>
+                  <td>Cổ đông là nhân viên</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
