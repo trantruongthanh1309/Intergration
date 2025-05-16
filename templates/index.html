@@ -308,22 +308,14 @@
       </div>
     </div>
 <script>
-  // Nhận dữ liệu từ Flask (dưới dạng biến Jinja)
-  // Nhận dữ liệu từ Flask
-const total = { total_employees },
-      working = { working },
-      on_leave = { on_leave },
-      resigned = { resigned },
-      done = { done },
-      processing = { processing },
-      remaining = { remaining };
-const ctx1 = document.getElementById("employeeChart").getContext("2d");
+  // Biểu đồ nhân viên với số liệu tĩnh
+  const ctx1 = document.getElementById("employeeChart").getContext("2d");
   new Chart(ctx1, {
     type: "pie",
     data: {
       labels: ["Đang làm việc", "Nghỉ phép", "Đã nghỉ việc"],
       datasets: [{
-        data: [working, on_leave, resigned],
+        data: [10, 5, 20],  // Số liệu mẫu
         backgroundColor: ["#28a745", "#ffc107", "#dc3545"]
       }]
     },
@@ -333,7 +325,7 @@ const ctx1 = document.getElementById("employeeChart").getContext("2d");
     }
   });
 
-  // Biểu đồ công việc
+  // Biểu đồ công việc với số liệu tĩnh
   const ctx2 = document.getElementById("taskChart").getContext("2d");
   new Chart(ctx2, {
     type: "bar",
@@ -341,7 +333,7 @@ const ctx1 = document.getElementById("employeeChart").getContext("2d");
       labels: ["Hoàn Thành", "Đang Xử Lý", "Còn Lại"],
       datasets: [{
         label: "Công Việc",
-        data: [done, processing, remaining],
+        data: [15, 8, 7],  // Số liệu mẫu
         backgroundColor: "#007bff",
         borderColor: "#0056b3",
         borderWidth: 1
@@ -354,6 +346,7 @@ const ctx1 = document.getElementById("employeeChart").getContext("2d");
     }
   });
 </script>
+
 </script>
 
     <!-- Bootstrap JS -->

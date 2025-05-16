@@ -243,7 +243,12 @@
 <a href="{{ url_for('xuat_excel_nhan_vien') }}" class="btn btn-success">
   <i class="fas fa-file-excel"></i> Xuất Excel
 </a>
-  
+<form action="{{ url_for('nhap_excel_nhan_vien') }}" method="POST" enctype="multipart/form-data" style="display:inline-block;">
+  <input type="file" name="excel_file" accept=".xlsx" required />
+  <button type="submit" class="btn btn-primary">📥 Nhập Excel</button>
+</form>
+
+
         </div>
     
         <table class="table table-striped table-hover" id="employeeTable">

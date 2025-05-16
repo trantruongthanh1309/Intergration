@@ -1345,10 +1345,101 @@ def xuat_bao_cao():
     output.seek(0)
     return send_file(output, download_name="bao_cao_thong_ke.xlsx", as_attachment=True)
 
+import pandas as pd
+
+@app.route("/nhap-excel-nhan-vien", methods=["POST"])
+def nhap_excel_nhan_vien():
+    file = request.files.get("excel_file")
+    if not file:
+        flash("Không có file được chọn!", "danger")
+        return redirect(url_for("quan_li_nhan_su"))
+
+    try:
+        df = pd.read_excel(file)
+    except Exception as e:
+        flash("Không đọc được file Excel!", "danger")
+        print("Lỗi đọc Excel:", e)
+        return redirect(url_for("quan_li_nhan_su"))
+
+    dep_map = {d.DepartmentName: d.DepartmentID for d in DepartmentSQL.query.all()}
+    pos_map = {p.PositionName: p.PositionID for p in PositionSQL.query.all()}
+
+    for _, row in df.iterrows():
+        try:
+            emp_id = int(row["Mã NV"])
+            if EmployeeSQL.query.get(emp_id):
+                continue  # đã tồn tại
+
+            emp = EmployeeSQL(
+                EmployeeID=emp_id,
+                FullName=row["Họ Tên"],
+                DepartmentID=dep_map.get(row["Phòng Ban"]),
+                PositionID=pos_map.get(row["Chức Vụ"]),
+                Status=row["Trạng Thái"]
+            )
+            db.session.add(emp)
+        except Exception as e:
+            print("Lỗi:", e)
+            continue
+
+    db.session.commit()
+    flash("Nhập dữ liệu từ Excel thành công!", "success")
+    return redirect(url_for("quan_li_nhan_su"))
+
+
 @app.route("/dang-xuat")
 def dang_xuat():
     session.clear()
     return redirect(url_for("login"))
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
+        full_name = request.form.get("full_name")
+        email = request.form.get("email")
+        phone = request.form.get("phone")
+        address = request.form.get("address")
+        birth_date = request.form.get("birth_date")
+
+        # Kiểm tra username đã tồn tại chưa
+        existing_user = User.query.filter_by(username=username).first()
+        if existing_user:
+            flash("Tên đăng nhập đã tồn tại!", "danger")
+            return redirect(url_for("register"))
+
+        # Hash password trước khi lưu
+        hashed_password = generate_password_hash(password)
+
+        # Tạo User mới với role nhân viên (EMP)
+        role_emp = Role.query.filter_by(role_code="EMP").first()
+        if not role_emp:
+            flash("Role EMP chưa được cấu hình trong hệ thống.", "danger")
+            return redirect(url_for("register"))
+
+        new_user = User(
+            username=username,
+            password=hashed_password,
+            role_id=role_emp.role_id,
+            email=email,
+            phone_number=phone,
+            address=address,
+            birth_date=datetime.strptime(birth_date, "%Y-%m-%d") if birth_date else None
+        )
+        db.session.add(new_user)
+        db.session.commit()
+
+        # Tự động đăng nhập sau khi đăng ký thành công
+        session["logged_in"] = True
+        session["role"] = role_emp.role_code
+        session["username"] = username
+        session["employee_id"] = new_user.user_id
+
+        flash("Đăng ký thành công! Bạn đã được đăng nhập với vai trò nhân viên.", "success")
+        return redirect(url_for("home"))
+
+    return render_template("dang_ki.html")
 
 if __name__ == "__main__":
     app.run(debug=True)
