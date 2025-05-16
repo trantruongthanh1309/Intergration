@@ -150,90 +150,132 @@
       .btn-add:hover {
         background-color: #0056b3;
       }
+      .menu-item.disabled { pointer-events: none; color: #6c757d; background-color:
+  #f8f9fa; } .menu-item.disabled:hover { cursor: not-allowed; background-color:
+  #f8f9fa; }
     </style>
   </head>
   <div>
     <!-- Sidebar -->
     <div class="sidebar">
       <h2 style="text-align: center; color: white; font-weight: bold">Menu</h2>
-      <a href="tc" ><i class="fas fa-home"></i> Trang Chủ</a>
-      <a href="{{ url_for('quan_li_tai_chinh') }}"
-        ><i class="fas fa-chart-line"></i> Quản Lí Tài Chính</a
-      >
-      <a href="{{ url_for('quan_li_nhan_su') }}"
-      class="active" ><i class="fas fa-users"></i> Quản Lí Nhân Sự</a
-      >
-      <a href="{{ url_for('bao_cao_tai_chinh') }}"
-        ><i class="fas fa-chart-line"></i> Báo Cáo Tài Chính</a
-      >
-      <a href="{{ url_for('cai_dat') }}"><i class="fas fa-cogs"></i> Cài Đặt</a>
-      <a href="{{ url_for('ho_so') }}"><i class="fas fa-file"></i> Hồ Sơ</a>
+    </a>
+    <!-- Hiển thị tất cả các menu, nhưng sẽ disable nếu không có quyền -->
+    <a href="{{ url_for('home') }}"><i class="fas fa-home"></i> Trang Chủ</a>
+
+    <!-- Quản lý tài chính -->
+    <a href="{{ url_for('quan_li_tai_chinh') }}" 
+       class="menu-item {% if 'quan_li_tai_chinh' not in user_permissions %}disabled{% endif %}" 
+       {% if 'quan_li_tai_chinh' not in user_permissions %} style="pointer-events: none; color: #6c757d;" {% endif %}>
+        <i class="fas fa-chart-line"></i> Quản Lí Tài Chính
+    </a>
+    
+    <!-- Quản lý nhân sự -->
+    <a href="{{ url_for('quan_li_nhan_su') }}" class="active"
+       class="menu-item {% if 'quan_li_nhan_su' not in user_permissions %}disabled{% endif %}" 
+       {% if 'quan_li_nhan_su' not in user_permissions %} style="pointer-events: none; color: #6c757d;" {% endif %}>
+        <i class="fas fa-users"></i> Quản Lí Nhân Sự
+    </a>
+    
+    <!-- Báo cáo tài chính -->
+    <a href="{{ url_for('bao_cao_tai_chinh') }}" 
+       class="menu-item {% if 'bao_cao_tai_chinh' not in user_permissions %}disabled{% endif %}" 
+       {% if 'bao_cao_tai_chinh' not in user_permissions %} style="pointer-events: none; color: #6c757d;" {% endif %}>
+        <i class="fas fa-chart-line"></i> Báo Cáo Tài Chính
+    </a>
+    
+    <!-- Phòng ban chức vụ -->
+    <a href="{{ url_for('phong_ban_chuc_vu') }}" 
+       class="menu-item {% if 'phong_ban_chuc_vu' not in user_permissions %}disabled{% endif %}" 
+       {% if 'phong_ban_chuc_vu' not in user_permissions %} style="pointer-events: none; color: #6c757d;" {% endif %}>
+        <i class="fas fa-shop"></i> Phòng Ban Và Chức Vụ
+    </a>
+    
+    <!-- Hồ sơ -->
+    <a href="{{ url_for('ho_so') }}" 
+       class="menu-item {% if 'ho_so' not in user_permissions %}disabled{% endif %}" 
+       {% if 'ho_so' not in user_permissions %} style="pointer-events: none; color: #6c757d;" {% endif %}>
+        <i class="fas fa-file"></i> Hồ Sơ
+    </a>
+    
+    <a href="{{ url_for('canh_bao_thong_bao') }}"><i class="fas fa-bell"></i> Cảnh Báo Và Thông Báo</a>
+    <a href="{{ url_for('cai_dat') }}"><i class="fas fa-cogs"></i> Cài Đặt</a>
+    <a href="{{ url_for('dang_xuat') }}"><i class="fas fa-sign-out-alt"></i> Đăng Xuất</a>
+      
     </div>
+    
+
     <!-- Content -->
     <div class="content">
       <div class="container">
         <h1><i class="fas fa-users"></i> Quản Lý Nhân Viên</h1>
+    
+        <div class="form-header mb-4 d-flex gap-2 flex-wrap">
+  <input type="text" id="searchInput" placeholder="Tìm Mã NV hoặc Họ tên" class="form-control" />
 
-        <div class="form-header">
-          <input
-            type="text"
-            placeholder="Tìm kiếm nhân viên"
-            class="form-control"
-          />
-          <select class="form-control">
-            <option>Trang thái làm việc</option>
-            <option>Hoạt động</option>
-            <option>Không hoạt động</option>
-          </select>
-          <!-- Trigger modal when the button is clicked -->
+  <select id="statusFilter" class="form-control">
+    <option value="">Tất cả trạng thái</option>
+    <option>Đang làm</option>
+    <option>Nghỉ việc</option>
+  </select>
+
+  <select id="departmentFilter" class="form-control">
+    <option value="">Tất cả phòng ban</option>
+    {% for pb in departments %}
+    <option value="{{ pb.DepartmentName }}">{{ pb.DepartmentName }}</option>
+    {% endfor %}
+  </select>
+
+  <select id="positionFilter" class="form-control">
+    <option value="">Tất cả chức vụ</option>
+    {% for cv in positions %}
+    <option value="{{ cv.PositionName }}">{{ cv.PositionName }}</option>
+    {% endfor %}
+  </select>
+</div>
           <button
-            class="btn-add"
+            class="btn btn-primary"
             data-bs-toggle="modal"
             data-bs-target="#addEmployeeModal"
           >
-            Thêm Nhân Viên Mới
+            <i class="fas fa-plus"></i> Thêm Nhân Viên Mới
           </button>
+<a href="{{ url_for('xuat_excel_nhan_vien') }}" class="btn btn-success">
+  <i class="fas fa-file-excel"></i> Xuất Excel
+</a>
+  
         </div>
-
+    
         <table class="table table-striped table-hover" id="employeeTable">
           <thead>
             <tr>
               <th>Mã NV</th>
               <th>Họ Tên</th>
-              <th>Ngày Sinh</th>
-              <th>Giới Tính</th>
-              <th>Số Điện Thoại</th>
-              <th>Email</th>
-              <th>Ngày Vào Làm</th>
+              <th>Phòng Ban</th>
+              <th>Chức Vụ</th>
+              <th>Trạng Thái</th>
               <th>Hành Động</th>
             </tr>
           </thead>
           <tbody>
             {% for nv in nhan_viens %}
             <tr>
-              <td>{{ nv.MaNV }}</td>
-              <td>{{ nv.HoTen }}</td>
-              <td>{{ nv.NgaySinh }}</td>
-              <td>{{ nv.GioiTinh }}</td>
-              <td>{{ nv.SoDienThoai }}</td>
-              <td>{{ nv.Email }}</td>
-              <td>{{ nv.NgayVaoLam }}</td>
-              <td>
-                <a
-                  href="#"
-                  class="btn btn-warning btn-sm"
-                  data-bs-toggle="modal"
-                  data-bs-target="#updateEmployeeModal"
-                  onclick="setEmployeeData('{{ nv.MaNV }}', '{{ nv.HoTen }}', '{{ nv.NgaySinh }}', '{{ nv.GioiTinh }}', '{{ nv.DiaChi }}', '{{ nv.SoDienThoai }}', '{{ nv.Email }}', '{{ nv.NgayVaoLam }}')"
-                >
-                  <i class="fas fa-edit"></i> Cập Nhật
-                </a>
+              <td>{{ nv.EmployeeID }}</td>
+              <td>{{ nv.FullName }}</td>
+              <td>{{ nv.DepartmentName }}</td>
+              <td>{{ nv.PositionName }}</td>
 
-                <a
-                  href="{{ url_for('xoa_nhan_vien', ma_nv=nv.MaNV) }}"
-                  class="btn btn-danger btn-sm"
-                  onclick="return confirm('Bạn có chắc chắn muốn xóa nhân viên này?');"
-                >
+              <td>{{ nv.Status }}</td>
+              <td>
+                <a href="#" class="btn btn-warning btn-sm"
+                data-bs-toggle="modal"
+                data-bs-target="#updateEmployeeModal"
+                onclick="setEmployeeData('{{ nv.EmployeeID }}', '{{ nv.FullName }}', '{{ nv.DepartmentID }}', '{{ nv.PositionID }}', '{{ nv.Status }}')">
+               <i class="fas fa-edit"></i> Cập Nhật
+             </a>
+             
+                <a href="{{ url_for('xoa_nhan_vien', ma_nv=nv.EmployeeID) }}" class="btn btn-danger btn-sm"
+                  onclick="return confirm('Bạn có chắc chắn muốn xóa nhân viên này?');">
                   <i class="fas fa-trash"></i> Xóa
                 </a>
               </td>
@@ -243,170 +285,271 @@
         </table>
       </div>
     </div>
-  <!-- Modal Cập Nhật Nhân Viên -->
-<div
-  class="modal fade"
-  id="updateEmployeeModal"
-  tabindex="-1"
-  aria-labelledby="updateEmployeeModalLabel"
-  aria-hidden="true"
->
+    <!-- Modal Cập Nhật Nhân Viên -->
+<div class="modal fade" id="updateEmployeeModal" tabindex="-1" aria-labelledby="updateEmployeeModalLabel" aria-hidden="true">
   <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="updateEmployeeModalLabel">Cập Nhật Nhân Viên</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <!-- Form cập nhật nhân viên -->
+    <form method="POST" id="updateEmployeeForm">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Cập Nhật Nhân Viên</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+
+          <input type="hidden" name="employee_id" id="update_employee_id" />
+
           <div class="mb-3">
             <label class="form-label">Họ và Tên:</label>
-            <input type="text" class="form-control" name="ho_ten" id="ho_ten" required />
+            <input type="text" class="form-control" name="ho_ten" id="update_ho_ten" required />
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Ngày Sinh:</label>
-            <input type="date" class="form-control" name="ngay_sinh" id="ngay_sinh" />
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Giới Tính:</label>
-            <select class="form-select" name="gioi_tinh" id="gioi_tinh">
-              <option value="Nam">Nam</option>
-              <option value="Nữ">Nữ</option>
+            <label class="form-label">Phòng Ban:</label>
+            <select class="form-select" name="phong_ban" id="update_phong_ban">
+              {% for pb in departments %}
+              <option value="{{ pb.DepartmentID }}">{{ pb.DepartmentName }}</option>
+              {% endfor %}
             </select>
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Địa Chỉ:</label>
-            <input type="text" class="form-control" name="dia_chi" id="dia_chi" />
+            <label class="form-label">Chức Vụ:</label>
+            <select class="form-select" name="chuc_vu" id="update_chuc_vu">
+              {% for cv in positions %}
+              <option value="{{ cv.PositionID }}">{{ cv.PositionName }}</option>
+              {% endfor %}
+            </select>
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Số Điện Thoại:</label>
-            <input type="text" class="form-control" name="so_dien_thoai" id="so_dien_thoai" />
+            <label class="form-label">Trạng Thái:</label>
+            <select class="form-select" name="trang_thai" id="update_trang_thai">
+              <option value="Đang làm">Đang làm</option>
+              <option value="Nghỉ việc">Nghỉ việc</option>
+            </select>
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Email:</label>
-            <input type="email" class="form-control" name="email" id="email" />
+            <label class="form-label">Tài Khoản:</label>
+            <input type="text" class="form-control" name="username" id="update_username" required />
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Ngày Vào Làm:</label>
-            <input type="date" class="form-control" name="ngay_vao_lam" id="ngay_vao_lam" />
+            <label class="form-label">Mật Khẩu (để trống nếu không đổi):</label>
+            <input type="password" class="form-control" name="password" id="update_password" />
           </div>
 
-          <button type="submit" class="btn-update">
+          <div class="mb-3">
+            <label class="form-label">Quyền:</label>
+            <select class="form-select" name="role_id" id="update_role_id">
+              {% for role in roles %}
+              <option value="{{ role.role_id }}">{{ role.role_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success">
             <i class="fas fa-sync-alt"></i> Cập Nhật
           </button>
-        </form>
-       
+        </div>
       </div>
-    </div>
+    </form>
   </div>
 </div>
 
-    <!-- Modal Thêm Nhân Viên Mới -->
-    <div
-      class="modal fade"
-      id="addEmployeeModal"
-      tabindex="-1"
-      aria-labelledby="addEmployeeModalLabel"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="addEmployeeModalLabel">
-              Thêm Nhân Viên Mới
-            </h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
+ <!-- Modal Thêm Nhân Viên Mới -->
+<div class="modal fade" id="addEmployeeModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="POST" action="{{ url_for('them_nhan_vien') }}">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Thêm Nhân Viên Mới</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Mã Nhân Viên -->
+          <div class="mb-3">
+            <label>Mã NV:</label>
+            <input type="number" name="employee_id" class="form-control" required>
           </div>
-          <div class="modal-body">
-            <form method="POST" action="{{ url_for('them_nhan_vien') }}">
-              <div class="mb-3">
-                <label class="form-label">Họ và Tên:</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  name="ho_ten"
-                  id="ho_ten"
-                  required
-                />
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label">Ngày Sinh:</label>
-                <input
-                  type="date"
-                  class="form-control"
-                  name="ngay_sinh"
-                  id="ngay_sinh"
-                />
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label">Giới Tính:</label>
-                <select class="form-select" name="gioi_tinh" id="gioi_tinh">
-                  <option value="Nam">Nam</option>
-                  <option value="Nữ">Nữ</option>
-                </select>
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label">Địa Chỉ:</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  name="dia_chi"
-                  id="dia_chi"
-                />
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label">Số Điện Thoại:</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  name="so_dien_thoai"
-                  id="so_dien_thoai"
-                />
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label">Email:</label>
-                <input
-                  type="email"
-                  class="form-control"
-                  name="email"
-                  id="email"
-                />
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label">Ngày Vào Làm:</label>
-                <input
-                  type="date"
-                  class="form-control"
-                  name="ngay_vao_lam"
-                  id="ngay_vao_lam"
-                />
-              </div>
-
-              <button type="submit" class="btn-submit">
-                <i class="fas fa-plus"></i> Thêm Nhân Viên
-              </button>
-            </form>
+          <!-- Họ và tên -->
+          <div class="mb-3">
+            <label>Họ và Tên:</label>
+            <input type="text" name="ho_ten" class="form-control" required>
           </div>
+          <!-- Phòng Ban -->
+          <div class="mb-3">
+            <label>Phòng Ban:</label>
+            <select name="phong_ban" class="form-select" required>
+              <option value="" disabled selected>Chọn phòng ban</option>
+              {% for pb in departments %}
+              <option value="{{ pb.DepartmentID }}">{{ pb.DepartmentName }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <!-- Chức Vụ -->
+          <div class="mb-3">
+            <label>Chức Vụ:</label>
+            <select name="chuc_vu" class="form-select" required>
+              <option value="" disabled selected>Chọn chức vụ</option>
+              {% for cv in positions %}
+              <option value="{{ cv.PositionID }}">{{ cv.PositionName }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <!-- Trạng Thái -->
+          <div class="mb-3">
+            <label>Trạng Thái:</label>
+            <select name="trang_thai" class="form-select" required>
+              <option value="Đang làm">Đang làm</option>
+              <option value="Nghỉ việc">Nghỉ việc</option>
+            </select>
+          </div>
+          <div class="mb-3">
+          <label for="username" class="form-label">Tên tài khoản</label>
+          <input type="text" class="form-control" name="username" id="username" required>
+        </div>
+        <div class="mb-3">
+          <label for="password" class="form-label">Mật khẩu</label>
+          <input type="password" class="form-control" name="password" id="password" required>
+        </div>
+        <label for="role_id">Chọn Quyền:</label>
+<select name="role_id" id="role_id" required>
+  <option value="2">Admin</option>
+  <option value="3">HR</option>
+  <option value="4">Payroll Manager</option>
+  <option value="5">Employee</option>
+</select>
+
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary">
+            <i class="fas fa-plus"></i> Thêm Nhân Viên
+          </button>
         </div>
       </div>
-    </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- Modal Cập Nhật Nhân Viên -->
+<div class="modal fade" id="updateEmployeeModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="POST">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Cập Nhật Nhân Viên</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="employee_id" id="update_employee_id">
+          <div class="mb-3">
+            <label>Họ và Tên:</label>
+            <input type="text" name="ho_ten" id="update_ho_ten" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label>Phòng Ban:</label>
+            <select name="phong_ban" id="update_phong_ban" class="form-select" required>
+              {% for pb in departments %}
+              <option value="{{ pb.DepartmentID }}">{{ pb.DepartmentName }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label>Chức Vụ:</label>
+            <select name="chuc_vu" id="update_chuc_vu" class="form-select" required>
+              {% for cv in positions %}
+              <option value="{{ cv.PositionID }}">{{ cv.PositionName }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label>Trạng Thái:</label>
+            <select name="trang_thai" id="update_trang_thai" class="form-select" required>
+              <option value="Đang làm">Đang làm</option>
+              <option value="Nghỉ việc">Nghỉ việc</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-success"><i class="fas fa-sync-alt"></i> Cập Nhật</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function setEmployeeData(id, name, dept, pos, status) {
+    document.getElementById("update_employee_id").value = id;
+    document.getElementById("update_ho_ten").value = name;
+    document.getElementById("update_phong_ban").value = dept;
+    document.getElementById("update_chuc_vu").value = pos;
+    document.getElementById("update_trang_thai").value = status;
+    document.querySelector("#updateEmployeeModal form").action = "/cap-nhat-nhan-vien/" + id;
+  }
+</script>
+
+<script>
+  const searchInput = document.getElementById("searchInput");
+  const statusFilter = document.getElementById("statusFilter");
+  const departmentFilter = document.getElementById("departmentFilter");
+  const positionFilter = document.getElementById("positionFilter");
+  const table = document.getElementById("employeeTable");
+  const rows = table.querySelectorAll("tbody tr");
+
+  function filterTable() {
+    const keyword = searchInput.value.toLowerCase();
+    const status = statusFilter.value;
+    const department = departmentFilter.value;
+    const position = positionFilter.value;
+
+    rows.forEach((row) => {
+      const maNV = row.cells[0].textContent.toLowerCase();
+      const hoTen = row.cells[1].textContent.toLowerCase();
+      const phongBan = row.cells[2].textContent;
+      const chucVu = row.cells[3].textContent;
+      const trangThai = row.cells[4].textContent;
+
+      const matchKeyword = maNV.includes(keyword) || hoTen.includes(keyword);
+      const matchStatus = !status || trangThai === status;
+      const matchDep = !department || phongBan === department;
+      const matchPos = !position || chucVu === position;
+
+      row.style.display = matchKeyword && matchStatus && matchDep && matchPos ? "" : "none";
+    });
+  }
+
+  searchInput.addEventListener("input", filterTable);
+  statusFilter.addEventListener("change", filterTable);
+  departmentFilter.addEventListener("change", filterTable);
+  positionFilter.addEventListener("change", filterTable);
+</script>
+
+<script>
+function exportTableToExcel(tableID, filename = '') {
+  const dataType = 'application/vnd.ms-excel';
+  const tableSelect = document.getElementById(tableID);
+  const tableHTML = tableSelect.outerHTML.replace(/ /g, '%20');
+  
+  filename = filename ? filename + '.xls' : 'excel_data.xls';
+  
+  const downloadLink = document.createElement("a");
+  document.body.appendChild(downloadLink);
+
+  if (navigator.msSaveOrOpenBlob) {
+    const blob = new Blob(['\ufeff', tableHTML], { type: dataType });
+    navigator.msSaveOrOpenBlob(blob, filename);
+  } else {
+    downloadLink.href = 'data:' + dataType + ', ' + tableHTML;
+    downloadLink.download = filename;
+    downloadLink.click();
+  }
+}
+</script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   </body>

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quản Lý Nhân Viên</title>
+
+    <!-- Bootstrap 5 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <style>
+      body {
+        font-family: "Arial", sans-serif;
+        background-color: #f8f9fa; /* Nền trắng cho toàn bộ trang */
+        margin: 0;
+        padding: 0;
+        display: flex;
+      }
+
+      /* Sidebar */
+      .sidebar {
+        width: 250px;
+        background-color: #2a3b4c;
+        height: 100vh;
+        padding-top: 50px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .sidebar a {
+        display: block;
+        padding: 15px;
+        font-size: 18px;
+        color: white;
+        text-decoration: none;
+        margin: 10px 0;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+      }
+
+      .sidebar a:hover {
+        background-color: #475f6a;
+      }
+
+      .active {
+        background-color: #007bff;
+      }
+
+      /* Content */
+      .content {
+        margin-left: 260px;
+        padding: 20px;
+        width: calc(100% - 260px);
+        background-color: white; /* Màu nền trắng cho phần nội dung */
+        color: black; /* Chữ màu đen để dễ đọc */
+      }
+
+      .container {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        color: black;
+      }
+
+      h1 {
+        font-weight: bold;
+        color: #343a40; /* Chỉnh màu chữ thành màu đen sáng */
+      }
+
+      /* Table */
+      .table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+
+      .table th,
+      .table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+
+      .table th {
+        background-color: #2a5298;
+        color: white;
+      }
+
+      .table td {
+        background-color: rgba(255, 255, 255, 0.2);
+      }
+
+      .table tbody tr:hover {
+        background-color: rgba(255, 255, 255, 0.4);
+      }
+
+      /* Form Styles */
+      .form-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .form-header input,
+      .form-header select {
+        width: 250px;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        font-size: 16px;
+      }
+
+      .form-header button {
+        padding: 10px 20px;
+        background-color: #17a2b8;
+        color: white;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+      }
+
+      .form-header button:hover {
+        background-color: #117a8b;
+      }
+
+      /* Button Styles */
+      .btn-export,
+      .btn-add {
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+      }
+
+      .btn-export:hover,
+      .btn-add:hover {
+        background-color: #0056b3;
+      }
+
+      /* Chart Container */
+      .chart-container {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 30px;
+      }
+
+      .chart-box {
+        width: 48%;
+        padding: 15px;
+        background-color: #f1f1f1;
+        border-radius: 8px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+      }
+
+      .chart-box h5 {
+        font-weight: bold;
+        margin-bottom: 20px;
+      }
+
+      .chart-box .chart {
+        height: 300px;
+        background-color: #e9ecef;
+        border-radius: 8px;
+        padding: 10px;
+      }
+      .menu-item.disabled {
+        pointer-events: none;
+        color: #6c757d;
+        background-color: #f8f9fa;
+      }
+      .menu-item.disabled:hover {
+        cursor: not-allowed;
+        background-color: #f8f9fa;
+      }
+
+      /* Modal Styles */
+      .modal-header,
+      .modal-body {
+        padding: 15px;
+      }
+      
+    </style>
+    <div class="sidebar">
+      <h2 style="text-align: center; color: white; font-weight: bold">Menu</h2>
+    </a>
+    <!-- Hiển thị tất cả các menu, nhưng sẽ disable nếu không có quyền -->
+    <a href="{{ url_for('home') }}" ><i class="fas fa-home"></i> Trang Chủ</a>
+
+    <!-- Quản lý tài chính -->
+    <a href="{{ url_for('quan_li_tai_chinh') }}"class="active" 
+       class="menu-item {% if 'quan_li_tai_chinh' not in user_permissions %}disabled{% endif %}" 
+       {% if 'quan_li_tai_chinh' not in user_permissions %} style="pointer-events: none; color: #6c757d;" {% endif %}>
+        <i class="fas fa-chart-line"></i> Quản Lí Tài Chính
+    </a>
+    
+    <!-- Quản lý nhân sự -->
+    <a href="{{ url_for('quan_li_nhan_su') }}" 
+       class="menu-item {% if 'quan_li_nhan_su' not in user_permissions %}disabled{% endif %}" 
+       {% if 'quan_li_nhan_su' not in user_permissions %} style="pointer-events: none; color: #6c757d;" {% endif %}>
+        <i class="fas fa-users"></i> Quản Lí Nhân Sự
+    </a>
+    
+    <!-- Báo cáo tài chính -->
+    <a href="{{ url_for('bao_cao_tai_chinh') }}" 
+       class="menu-item {% if 'bao_cao_tai_chinh' not in user_permissions %}disabled{% endif %}" 
+       {% if 'bao_cao_tai_chinh' not in user_permissions %} style="pointer-events: none; color: #6c757d;" {% endif %}>
+        <i class="fas fa-chart-line"></i> Báo Cáo Tài Chính
+    </a>
+    
+    <!-- Phòng ban chức vụ -->
+    <a href="{{ url_for('phong_ban_chuc_vu') }}" 
+       class="menu-item {% if 'phong_ban_chuc_vu' not in user_permissions %}disabled{% endif %}" 
+       {% if 'phong_ban_chuc_vu' not in user_permissions %} style="pointer-events: none; color: #6c757d;" {% endif %}>
+        <i class="fas fa-shop"></i> Phòng Ban Và Chức Vụ
+    </a>
+    
+    <!-- Hồ sơ -->
+    <a href="{{ url_for('ho_so') }}" 
+       class="menu-item {% if 'ho_so' not in user_permissions %}disabled{% endif %}" 
+       {% if 'ho_so' not in user_permissions %} style="pointer-events: none; color: #6c757d;" {% endif %}>
+        <i class="fas fa-file"></i> Hồ Sơ
+    </a>
+    
+    <a href="{{ url_for('canh_bao_thong_bao') }}"><i class="fas fa-bell"></i> Cảnh Báo Và Thông Báo</a>
+    <a href="{{ url_for('cai_dat') }}"><i class="fas fa-cogs"></i> Cài Đặt</a>
+    <a href="{{ url_for('dang_xuat') }}"><i class="fas fa-sign-out-alt"></i> Đăng Xuất</a>
+
+    </div>
+  </head>
+  <div class="container mt-5">
+    <h2>Thông Tin Nhân Viên</h2>
+    <table class="table table-bordered">
+      <tr>
+        <th>Mã Nhân Viên</th>
+        <td>{{ employee.EmployeeID }}</td>
+      </tr>
+      <tr>
+        <th>Họ Và Tên</th>
+        <td>{{ employee.FullName }}</td>
+      </tr>
+      <tr>
+        <th>Phòng Ban</th>
+        <td>
+          {{ employee.department.DepartmentName if employee.department else
+          'N/A' }}
+        </td>
+      </tr>
+      <tr>
+        <th>Chức Vụ</th>
+        <td>
+          {{ employee.position.PositionName if employee.position else 'N/A' }}
+        </td>
+      </tr>
+      <tr>
+        <th>Trạng Thái</th>
+        <td>{{ employee.Status }}</td>
+      </tr>
+    </table>
+
+    <h3>Lịch sử Lương</h3>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Tháng</th>
+          <th>Lương Cơ Bản</th>
+          <th>Thưởng</th>
+          <th>Khấu Trừ</th>
+          <th>Lương Thực Nhận</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for sal in salaries %}
+        <tr>
+          <td>
+            {{ sal.SalaryMonth.strftime('%Y-%m') if sal.SalaryMonth else 'N/A'
+            }}
+          </td>
+          <td>{{ "{:,.0f}".format(sal.BaseSalary) }}</td>
+          <td>{{ "{:,.0f}".format(sal.Bonus) }}</td>
+          <td>{{ "{:,.0f}".format(sal.Deductions) }}</td>
+          <td>{{ "{:,.0f}".format(sal.NetSalary) }}</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="5">Chưa có lịch sử lương.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <a href="{{ url_for('home') }}" class="btn btn-primary">Trở về Trang Chủ</a>
+  </div>
+  <body>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

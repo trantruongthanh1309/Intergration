@@ -1,0 +1,3 @@
+flask db init
+flask db migrate -m "Add Role table"
+flask db upgrade

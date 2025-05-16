@@ -1,13 +1,12 @@
-# SQL_SERVER_CONN = "mssql+pyodbc://@MSI/SQLEXPRESS01/HUMAN_BAITAP?driver=ODBC+Driver+17+for+SQL+Server&trusted_connection=yes"
-# MYSQL_CONN = "mysql+mysqlconnector://root:Thanh123+@localhost/payroll_baitap"
 from sqlalchemy import create_engine
 
-# Chuỗi kết nối SQL Server
-SQL_SERVER_CONN = "mssql+pyodbc://thanh:12@MSI\SQLEXPRESS01/HUMAN_BAITAP?driver=ODBC+Driver+17+for+SQL+Server"
-# Chuỗi kết nối MySQL
+# ✅ Chuỗi kết nối SQL Server - CHÚ Ý: cần escape \\ trong chuỗi kết nối
+SQL_SERVER_CONN = "mssql+pyodbc://sa:123@MSI\\SQLEXPRESS01/HUMAN_BAITAP?driver=ODBC+Driver+17+for+SQL+Server"
+
+# ✅ Chuỗi kết nối MySQL
 MYSQL_CONN = "mysql+mysqlconnector://root:Thanh123+@localhost/payroll_baitap"
 
-# Hàm kiểm tra kết nối
+# ✅ Hàm kiểm tra kết nối
 def check_connection(db_url, db_name):
     try:
         engine = create_engine(db_url)
@@ -15,16 +14,16 @@ def check_connection(db_url, db_name):
             print(f"✅ Kết nối thành công tới {db_name}!")
         return True
     except Exception as e:
-        print(f"❌ Lỗi kết nối tới {db_name}: {e}") 
+        print(f"❌ Lỗi kết nối tới {db_name}: {e}")
         return False
 
-# Kiểm tra kết nối SQL Server
+# ✅ Kiểm tra kết nối SQL Server
 sql_server_status = check_connection(SQL_SERVER_CONN, "SQL Server")
 
-# Kiểm tra kết nối MySQL
+# ✅ Kiểm tra kết nối MySQL
 mysql_status = check_connection(MYSQL_CONN, "MySQL")
 
-# Nếu cả hai kết nối đều thành công
+# ✅ Thông báo kết quả
 if sql_server_status and mysql_status:
     print("🎉 Cả hai kết nối đều thành công!")
 elif sql_server_status:
@@ -34,3 +33,4 @@ elif mysql_status:
 else:
     print("❌ Cả hai kết nối đều thất bại!")
 
+    

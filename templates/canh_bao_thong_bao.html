@@ -193,14 +193,10 @@
 
   <body>
     <!-- Sidebar -->
-     
     <div class="sidebar">
-      
       <h2 style="text-align: center; color: white; font-weight: bold">Menu</h2>
-      
-      <!-- Hiển thị tất cả các menu, nhưng sẽ disable nếu không có quyền -->
-      <a href="{{ url_for('home') }}" class="active"><i class="fas fa-home"></i> Trang Chủ</a>
-
+      <a href="{{ url_for('home') }}" ><i class="fas fa-home"></i> Trang Chủ</a>
+  
       <!-- Quản lý tài chính -->
       <a href="{{ url_for('quan_li_tai_chinh') }}" 
          class="menu-item {% if 'quan_li_tai_chinh' not in user_permissions %}disabled{% endif %}" 
@@ -235,132 +231,115 @@
          {% if 'ho_so' not in user_permissions %} style="pointer-events: none; color: #6c757d;" {% endif %}>
           <i class="fas fa-file"></i> Hồ Sơ
       </a>
-      <a href="{{ url_for('canh_bao_thong_bao') }}"><i class="fas fa-bell"></i> Cảnh Báo Và Thông Báo</a>
+      
+      <a href="{{ url_for('canh_bao_thong_bao') }}"class="active"><i class="fas fa-bell"></i> Cảnh Báo Và Thông Báo</a>
       <a href="{{ url_for('cai_dat') }}"><i class="fas fa-cogs"></i> Cài Đặt</a>
       <a href="{{ url_for('dang_xuat') }}"><i class="fas fa-sign-out-alt"></i> Đăng Xuất</a>
       
     </div>
-
-    <!-- Content -->    
-  </div>
+  
+    <!-- Content -->
+    <div class="content">
       <div class="container">
-        <h1><i class="fas fa-home"></i> Trang Chủ</h1><div class="user-info">
-          <h2>Chào, {{ session['username'] }}!</h2>
-          <h5>
-            {% if session['role'] == 'AD' %}
-              Bạn đang đăng nhập với quyền: <strong>AD</strong> - Quản trị viên đầy đủ quyền.
-            {% elif session['role'] == 'HRM' %}
-              Bạn đang đăng nhập với quyền: <strong>HRM</strong> - Quản lý nhân sự, không có quyền quản lý tài chính.
-            {% elif session['role'] == 'PM' %}
-              Bạn đang đăng nhập với quyền: <strong>PM</strong> - Quản lý dự án, không có quyền quản lý nhân sự.
-            {% elif session['role'] == 'EMP' %}
-              Bạn đang đăng nhập với quyền: <strong>Employee</strong> - Nhân viên, chỉ có quyền xem hồ sơ cá nhân.
-            {% endif %}
-          </h5>
-        </div> 
-        <!-- Statistics Cards -->
-        <div class="d-flex">
-          <div class="stat-card">
-           <h2>{{ total_employees }}</h2>
-      <p>Tổng Số Nhân Viên</p>
-
+        <h1><i class="fas fa-bell"></i> Hệ thống Cảnh báo & Thông báo</h1>
+  
+        <!-- Thông báo kỷ niệm công tác -->
+        <div class="card">
+          <div class="card-header bg-primary text-white">
+            <i class="fas fa-calendar-check"></i> Nhân viên sắp đến kỷ niệm công
+            tác từ <strong>HUMAN_2025</strong>
           </div>
-
-          <div class="stat-card">
-            <h2>{{ working }}</h2>
-<p>Nhân Viên Đang Làm Việc</p>
-          </div>
-          <div class="stat-card">
-            <h2>{{ on_leave }}</h2>
-<p>Nhân Viên Nghỉ Phép</p>
+          <div class="card-body">
+            <ul>
+              {% for nv in thong_bao_ky_niem %}
+              <li>
+                <strong>{{ nv.FullName }}</strong> sẽ kỷ niệm {{ nv.years }} năm
+                công tác vào ngày {{ nv.anniversary }}
+              </li>
+              {% else %}
+              <li>
+                Không có nhân viên nào sắp đến kỷ niệm công tác trong tháng này.
+              </li>
+              {% endfor %}
+            </ul>
           </div>
         </div>
+  
+        <!-- Cảnh báo vượt quá ngày phép -->
+        <div class="card mt-4">
+          <div class="card-header bg-danger text-white">
+            <i class="fas fa-exclamation-triangle"></i> Cảnh báo nhân viên vượt
+            quá số ngày nghỉ từ <strong>PAYROLL</strong>
+          </div>
+          <div class="card-body">
+            <ul>
+             {% for nv in vuot_ngay_phep %}
+  <li>
+    <strong>{{ nv.FullName }}</strong> đã nghỉ {{ nv.LeaveDays }} ngày (vượt giới hạn {{ gioi_han_phep }} ngày)
+  </li>
+{% else %}
+  <li>Không có nhân viên nào vượt quá số ngày nghỉ phép.</li>
+{% endfor %}
 
-        <!-- Task Overview -->
-        <div class="d-flex">
-          <div class="task-card">
-            <h2>120</h2>
-            <p>Công Việc Hoàn Thành</p>
-          </div>
-          <div class="task-card">
-            <h2>80</h2>
-            <p>Công Việc Đang Xử Lý</p>
-          </div>
-          <div class="task-card">
-            <h2>40</h2>
-            <p>Công Việc Còn Lại</p>
+            </ul>
           </div>
         </div>
-
-        <!-- Chart Container -->
-        <div class="chart-container mt-4">
-          <div class="chart-box">
-            <h5>Thống Kê Nhân Viên</h5>
-            <canvas id="employeeChart" class="chart"></canvas>
+  
+        <!-- Cảnh báo chênh lệch lương -->
+        <div class="card mt-4">
+          <div class="card-header bg-warning text-dark">
+            <i class="fas fa-money-bill-wave"></i> Thông báo chênh lệch lương
+            giữa các kỳ từ <strong>PAYROLL</strong>
           </div>
-          <div class="chart-box">
-            <h5>Thống Kê Công Việc</h5>
-            <canvas id="taskChart" class="chart"></canvas>
+          <div class="card-body">
+            <ul>
+              {% for chenh in chenh_lech_luong %}
+              <li>
+                <strong>{{ chenh.FullName }}</strong> có chênh lệch lương lớn
+                giữa {{ chenh.thang_1 }} và {{ chenh.thang_2 }}: {{
+                chenh.chuyen_doi | default("N/A") }} VND
+              </li>
+              {% else %}
+              <li>Không có sự chênh lệch lương lớn đáng kể giữa các kỳ.</li>
+              {% endfor %}
+            </ul>
           </div>
         </div>
-         </tbody>
-        </table>
+  
+        <!-- Gửi email thông báo lương -->
+        <div class="card mt-4">
+          <div class="card-header bg-success text-white">
+            <i class="fas fa-envelope"></i> Gửi email thông báo lương tháng này
+            từ <strong>PAYROLL</strong>
+          </div>
+          <div class="card-body">
+            <ul>
+              {% for email in ds_email_gui_luong %}
+              <li>
+                Đã gửi email thông báo lương cho <strong>{{ email }}</strong>
+              </li>
+              {% else %}
+              <li>Không có email nào được gửi.</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
-<script>
-  // Nhận dữ liệu từ Flask (dưới dạng biến Jinja)
-  // Nhận dữ liệu từ Flask
-const total = { total_employees },
-      working = { working },
-      on_leave = { on_leave },
-      resigned = { resigned },
-      done = { done },
-      processing = { processing },
-      remaining = { remaining };
-const ctx1 = document.getElementById("employeeChart").getContext("2d");
-  new Chart(ctx1, {
-    type: "pie",
-    data: {
-      labels: ["Đang làm việc", "Nghỉ phép", "Đã nghỉ việc"],
-      datasets: [{
-        data: [working, on_leave, resigned],
-        backgroundColor: ["#28a745", "#ffc107", "#dc3545"]
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { position: "top" } }
-    }
-  });
-
-  // Biểu đồ công việc
-  const ctx2 = document.getElementById("taskChart").getContext("2d");
-  new Chart(ctx2, {
-    type: "bar",
-    data: {
-      labels: ["Hoàn Thành", "Đang Xử Lý", "Còn Lại"],
-      datasets: [{
-        label: "Công Việc",
-        data: [done, processing, remaining],
-        backgroundColor: "#007bff",
-        borderColor: "#0056b3",
-        borderWidth: 1
-      }]
-    },
-    options: {
-      responsive: true,
-      scales: { y: { beginAtZero: true } },
-      plugins: { legend: { position: "top" } }
-    }
-  });
-</script>
-</script>
-
+  
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
-    
+    <script>
+      // Function to toggle the edit profile form
+      function toggleEditForm() {
+        const profileInfo = document.querySelector(".profile-info");
+        const editForm = document.querySelector(".edit-profile");
+        profileInfo.style.display =
+          profileInfo.style.display === "none" ? "block" : "none";
+        editForm.style.display =
+          editForm.style.display === "none" ? "block" : "none";
+      }
+    </script>
   </body>
 </html>
