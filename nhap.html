@@ -1,300 +1,186 @@
-<div class="sidebar">
-  <h2 style="text-align: center; color: white; font-weight: bold">Menu</h2>
-  <a href="tc" class="active"><i class="fas fa-home"></i> Trang Chủ</a>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TechLogix Dashboard</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
 
-  <!-- Phân quyền hiển thị menu -->
-  {% if role == 'Admin' %}
-  <a href="{{ url_for('quan_li_tai_chinh') }}"
-    ><i class="fas fa-chart-line"></i> Quản Lí Tài Chính</a
-  >
-  <a href="{{ url_for('quan_li_nhan_su') }}"
-    ><i class="fas fa-users"></i> Quản Lí Nhân Sự</a
-  >
-  <a href="{{ url_for('bao_cao_tai_chinh') }}"
-    ><i class="fas fa-chart-line"></i> Báo Cáo Tài Chính</a
-  >
-  {% elif role == 'HRM' %}
-  <a href="{{ url_for('quan_li_nhan_su') }}"
-    ><i class="fas fa-users"></i> Quản Lí Nhân Sự</a
-  >
-  <a href="{{ url_for('bao_cao_tai_chinh') }}" style="display: none"
-    ><i class="fas fa-chart-line"></i> Báo Cáo Tài Chính</a
-  >
-  <a href="{{ url_for('quan_li_tai_chinh') }}" style="display: none"
-    ><i class="fas fa-chart-line"></i> Quản Lí Tài Chính</a
-  >
-  {% elif role == 'PM' %}
-  <a href="{{ url_for('quan_li_tai_chinh') }}"
-    ><i class="fas fa-chart-line"></i> Quản Lí Tài Chính</a
-  >
-  <a href="{{ url_for('quan_li_nhan_su') }}" style="display: none"
-    ><i class="fas fa-users"></i> Quản Lí Nhân Sự</a
-  >
-  <a href="{{ url_for('phong_ban_chuc_vu') }}" style="display: none"
-    ><i class="fas fa-shop"></i> Phòng Ban Và Chức Vụ</a
-  >
-  {% elif role == 'Employee' %}
-  <a href="{{ url_for('ho_so') }}"><i class="fas fa-file"></i> Hồ Sơ</a>
-  {% endif %}
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f0f2f5;
+        margin: 0;
+        padding: 20px;
+        color: #333;
+      }
 
-  <a href="{{ url_for('canh_bao_thong_bao') }}"
-    ><i class="fas fa-bell"></i> Cảnh Báo Và Thông Báo</a
-  >
-  <a href="{{ url_for('cai_dat') }}"><i class="fas fa-cogs"></i> Cài Đặt</a>
-  <a href="{{ url_for('dang_xuat') }}"
-    ><i class="fas fa-sign-out-alt"></i> Đăng Xuất</a
-  >
-</div>
+      h1 {
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 32px;
+        color: #2a3f54;
+      }
 
-<a href="tc" class="active"><i class="fas fa-home"></i> Trang Chủ</a>
-<a href="{{ url_for('quan_li_tai_chinh') }}"
-  ><i class="fas fa-chart-line"></i> Quản Lí Tài Chính</a
->
+      .filters {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 20px;
+        padding: 15px;
+        background-color: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      }
 
+      .filters label {
+        font-weight: 500;
+      }
 
-<body>
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <h2 style="text-align: center; color: white; font-weight: bold">
-      Menu
-    </h2>
-    <a href="{{ url_for('home') }}" class="active"><i class="fas fa-home"></i> Trang Chủ</a>
+      .dashboard {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 20px;
+      }
 
-<!-- Quản lý tài chính -->
-<a href="{{ url_for('quan_li_tai_chinh') }}" 
-class="menu-item {% if 'quan_li_tai_chinh' not in user_permissions %}disabled{% endif %}" 
-{% if 'quan_li_tai_chinh' not in user_permissions %} style="pointer-events: none; color: #6c757d;" {% endif %}>
-<i class="fas fa-chart-line"></i> Quản Lí Tài Chính
-</a>
+      .card {
+        background-color: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        transition: transform 0.2s ease-in-out;
+      }
 
-<!-- Quản lý nhân sự -->
-<a href="{{ url_for('quan_li_nhan_su') }}" 
-class="menu-item {% if 'quan_li_nhan_su' not in user_permissions %}disabled{% endif %}" 
-{% if 'quan_li_nhan_su' not in user_permissions %} style="pointer-events: none; color: #6c757d;" {% endif %}>
-<i class="fas fa-users"></i> Quản Lí Nhân Sự
-</a>
+      .card:hover {
+        transform: translateY(-4px);
+      }
 
-<!-- Báo cáo tài chính -->
-<a href="{{ url_for('bao_cao_tai_chinh') }}" 
-class="menu-item {% if 'bao_cao_tai_chinh' not in user_permissions %}disabled{% endif %}" 
-{% if 'bao_cao_tai_chinh' not in user_permissions %} style="pointer-events: none; color: #6c757d;" {% endif %}>
-<i class="fas fa-chart-line"></i> Báo Cáo Tài Chính
-</a>
+      .stat {
+        font-size: 28px;
+        font-weight: bold;
+        color: #1e88e5;
+        margin-top: 10px;
+      }
 
-<!-- Phòng ban chức vụ -->
-<a href="{{ url_for('phong_ban_chuc_vu') }}" 
-class="menu-item {% if 'phong_ban_chuc_vu' not in user_permissions %}disabled{% endif %}" 
-{% if 'phong_ban_chuc_vu' not in user_permissions %} style="pointer-events: none; color: #6c757d;" {% endif %}>
-<i class="fas fa-shop"></i> Phòng Ban Và Chức Vụ
-</a>
+      .alert {
+        color: #e53935;
+        font-weight: bold;
+        margin-top: 10px;
+      }
 
-<!-- Hồ sơ -->
-<a href="{{ url_for('ho_so') }}" 
-class="menu-item {% if 'ho_so' not in user_permissions %}disabled{% endif %}" 
-{% if 'ho_so' not in user_permissions %} style="pointer-events: none; color: #6c757d;" {% endif %}>
-<i class="fas fa-file"></i> Hồ Sơ
-</a>
+      ul {
+        padding-left: 20px;
+      }
 
-<a href="{{ url_for('canh_bao_thong_bao') }}"><i class="fas fa-bell"></i> Cảnh Báo Và Thông Báo</a>
-<a href="{{ url_for('cai_dat') }}"><i class="fas fa-cogs"></i> Cài Đặt</a>
-<a href="{{ url_for('dang_xuat') }}"><i class="fas fa-sign-out-alt"></i> Đăng Xuất</a>
+      ul li {
+        margin-bottom: 6px;
+      }
 
-  </div>
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+      }
 
-  <!-- Content -->
-  <div class="content">
-    <div class="container">
-      <h1><i class="fas fa-cogs"></i> Cài Đặt</h1>
+      th {
+        background-color: #f7f9fc;
+      }
 
-      <!-- Tab Navigation -->
-      <ul class="nav nav-tabs" id="settingsTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-          <a
-            class="nav-link active"
-            id="account-tab"
-            data-bs-toggle="tab"
-            href="#account"
-            role="tab"
-            aria-controls="account"
-            aria-selected="true"
-            >Tài Khoản</a
-          >
-        </li>
-        <li class="nav-item" role="presentation">
-          <a
-            class="nav-link"
-            id="security-tab"
-            data-bs-toggle="tab"
-            href="#security"
-            role="tab"
-            aria-controls="security"
-            aria-selected="false"
-            >Bảo Mật</a
-          >
-        </li>
-        <li class="nav-item" role="presentation">
-          <a
-            class="nav-link"
-            id="notifications-tab"
-            data-bs-toggle="tab"
-            href="#notifications"
-            role="tab"
-            aria-controls="notifications"
-            aria-selected="false"
-            >Thông Báo</a
-          >
-        </li>
-        <li class="nav-item" role="presentation">
-          <a
-            class="nav-link"
-            id="appearance-tab"
-            data-bs-toggle="tab"
-            href="#appearance"
-            role="tab"
-            aria-controls="appearance"
-            aria-selected="false"
-            >Giao Diện</a
-          >
-        </li>
-      </ul>
+      th,
+      td {
+        padding: 12px;
+        border-bottom: 1px solid #e0e0e0;
+      }
 
-      <!-- Tab Content -->
-      <div class="tab-content" id="settingsTabsContent">
-        <!-- Account Settings -->
-        <div
-          class="tab-pane fade show active"
-          id="account"
-          role="tabpanel"
-          aria-labelledby="account-tab"
-        >
-          <h4>Thông tin tài khoản</h4>
-          <div class="form-group">
-            <label for="username">Tên người dùng</label>
-            <input
-              type="text"
-              class="form-control"
-              id="username"
-              placeholder="Nhập tên người dùng"
-            />
-          </div>
-          <div class="form-group">
-            <label for="email">Email</label>
-            <input
-              type="email"
-              class="form-control"
-              id="email"
-              placeholder="Nhập email"
-            />
-          </div>
-          <div class="form-group">
-            <label for="password">Mật khẩu mới</label>
-            <input
-              type="password"
-              class="form-control"
-              id="password"
-              placeholder="Nhập mật khẩu mới"
-            />
-          </div>
-          <div class="d-flex justify-content-end mt-4">
-            <button class="btn-save">Lưu Thay Đổi</button>
-            <button class="btn-cancel ms-3">Hủy Bỏ</button>
-          </div>
-        </div>
+      .low-stock {
+        background-color: #fff3f3;
+      }
 
-        <!-- Security Settings -->
-        <div
-          class="tab-pane fade"
-          id="security"
-          role="tabpanel"
-          aria-labelledby="security-tab"
-        >
-          <h4>Bảo mật tài khoản</h4>
-          <div class="form-group">
-            <label for="twoFactor">Xác thực hai yếu tố</label>
-            <select class="form-control" id="twoFactor">
-              <option>Đang bật</option>
-              <option>Đang tắt</option>
-            </select>
-          </div>
-          <div class="d-flex justify-content-end mt-4">
-            <button class="btn-save">Lưu Thay Đổi</button>
-            <button class="btn-cancel ms-3">Hủy Bỏ</button>
-          </div>
-        </div>
+      .chart-placeholder {
+        background-color: #f3f6fa;
+        height: 250px;
+        border: 2px dashed #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        color: #999;
+        font-style: italic;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>📊 TechLogix Integrated Dashboard</h1>
 
-        <!-- Notification Settings -->
-        <div
-          class="tab-pane fade"
-          id="notifications"
-          role="tabpanel"
-          aria-labelledby="notifications-tab"
-        >
-          <h4>Cài đặt thông báo</h4>
-          <div class="form-group">
-            <label for="emailNotifications">Thông báo qua email</label>
-            <select class="form-control" id="emailNotifications">
-              <option>Đang bật</option>
-              <option>Đang tắt</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="smsNotifications">Thông báo qua SMS</label>
-            <select class="form-control" id="smsNotifications">
-              <option>Đang bật</option>
-              <option>Đang tắt</option>
-            </select>
-          </div>
-          <div class="d-flex justify-content-end mt-4">
-            <button class="btn-save">Lưu Thay Đổi</button>
-            <button class="btn-cancel ms-3">Hủy Bỏ</button>
-          </div>
-        </div>
+    <div class="filters">
+      <label
+        >📅 Date:
+        <input type="date" />
+      </label>
+      <label
+        >📦 Order Status:
+        <select>
+          <option>All</option>
+          <option>Pending</option>
+          <option>In Transit</option>
+          <option>Completed</option>
+        </select>
+      </label>
+    </div>
 
-        <!-- Appearance Settings -->
-        <div
-          class="tab-pane fade"
-          id="appearance"
-          role="tabpanel"
-          aria-labelledby="appearance-tab"
-        >
-          <h4>Cài đặt giao diện</h4>
-          <div class="form-group">
-            <label for="theme">Chọn chủ đề</label>
-            <select
-              class="form-control"
-              id="theme"
-              onchange="changeTheme()"
-            >
-              <option>Ánh sáng</option>
-              <option>Ánh tối</option>
-            </select>
-          </div>
-          <div class="d-flex justify-content-end mt-4">
-            <button class="btn-save">Lưu Thay Đổi</button>
-            <button class="btn-cancel ms-3">Hủy Bỏ</button>
-          </div>
+    <div class="dashboard">
+      <!-- Order Stats -->
+      <div class="card">
+        <h3>🛒 Orders Today</h3>
+        <div class="stat">135 Orders</div>
+        <div class="alert">⚠️ 7 Delayed Orders!</div>
+      </div>
+
+      <!-- Delivery Status -->
+      <div class="card">
+        <h3>🚚 Delivery Status</h3>
+        <ul>
+          <li>Pending: <strong>25</strong></li>
+          <li>In Transit: <strong>40</strong></li>
+          <li>Completed: <strong>70</strong></li>
+        </ul>
+      </div>
+
+      <!-- Inventory Table -->
+      <div class="card" style="grid-column: span 2">
+        <h3>📦 Inventory Status</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Stock</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Product A</td>
+              <td>50</td>
+              <td>✅ In Stock</td>
+            </tr>
+            <tr class="low-stock">
+              <td>Product B</td>
+              <td>0</td>
+              <td>❌ Low Stock</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Revenue Chart -->
+      <div class="card" style="grid-column: span 2">
+        <h3>💰 Revenue Chart (Monthly)</h3>
+        <div class="chart-placeholder">
+          Chart Placeholder (Integrate Chart.js or similar)
         </div>
       </div>
     </div>
-  </div>
-
-  <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-  <script>
-    // Thay đổi giao diện khi chọn chủ đề
-    function changeTheme() {
-      var theme = document.getElementById("theme").value;
-      if (theme === "Ánh tối") {
-        document.body.classList.add("dark-theme");
-      } else {
-        document.body.classList.remove("dark-theme");
-      }
-    }
-  </script>
-</body>
+  </body>
 </html>
-
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
