@@ -313,6 +313,7 @@
     <th>Chọn</th>
     <th>Mã Lương</th>
     <th>Mã NV</th>
+    <th>Tên NV</th>
     <th>Tháng</th>
     <th>Lương Cơ Bản</th>
     <th>Thưởng</th>
@@ -328,6 +329,7 @@
 <tr>
   <td><input type="checkbox" class="chon-email" value="{{ r.EmployeeID }}"></td>
   <td>{{ r.SalaryID }}</td>
+  <td>{{ r.FullName}}</td>
   <td>{{ r.EmployeeID }}</td>
   <td>{{ r.SalaryMonth[:7] if r.SalaryMonth else '' }}</td>
   <td>{{ r.BaseSalary }} VND</td>

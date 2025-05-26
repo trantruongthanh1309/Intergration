@@ -1,359 +1,413 @@
-<!DOCTYPE html>
-<html lang="vi">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Trang Chủ - Quản Lý Nhân Viên</title>
+  <!DOCTYPE html>
+  <html lang="vi">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Trang Chủ - Quản Lý Nhân Viên</title>
 
-    <!-- Bootstrap 5 -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <!-- Font Awesome -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
+      <!-- Bootstrap 5 -->
+      <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+      />
+      <!-- Font Awesome -->
+      <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      />
 
-    <style>
-      body {
-        font-family: "Arial", sans-serif;
-        background-color: #f4f7fa;
-        margin: 0;
-        padding: 0;
-        display: flex;
-      }
+      <style>
+        body {
+          font-family: "Arial", sans-serif;
+          background-color: #f4f7fa;
+          margin: 0;
+          padding: 0;
+          display: flex;
+        }
 
-      /* Sidebar */
-      .sidebar {
-        width: 250px;
-        background-color: #2a3b4c;
-        height: 100vh;
-        padding-top: 50px;
-        position: fixed;
-        top: 0;
-        left: 0;
-        color: white;
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
-      }
+        /* Sidebar */
+        .sidebar {
+          width: 250px;
+          background-color: #2a3b4c;
+          height: 100vh;
+          padding-top: 50px;
+          position: fixed;
+          top: 0;
+          left: 0;
+          color: white;
+          display: flex;
+          flex-direction: column;
+          align-items: stretch;
+        }
 
-      .sidebar a {
-        display: block;
-        padding: 15px;
-        font-size: 18px;
-        color: white;
-        text-decoration: none;
-        margin: 10px 0;
-        border-radius: 5px;
-        transition: background-color 0.3s;
-      }
+        .sidebar a {
+          display: block;
+          padding: 15px;
+          font-size: 18px;
+          color: white;
+          text-decoration: none;
+          margin: 10px 0;
+          border-radius: 5px;
+          transition: background-color 0.3s;
+        }
 
-      .sidebar a:hover {
-        background-color: #475f6a;
-      }
+        .sidebar a:hover {
+          background-color: #475f6a;
+        }
 
-      .active {
-        background-color: #007bff;
-      }
+        .active {
+          background-color: #007bff;
+        }
 
-      /* Content */
-      .content {
-        margin-left: 260px;
-        padding: 20px;
-        width: calc(100% - 260px);
-        background-color: white;
-        color: black;
-      }
+        /* Content */
+        .content {
+          margin-left: 260px;
+          padding: 20px;
+          width: calc(100% - 260px);
+          background-color: white;
+          color: black;
+        }
 
-      .container {
-        background: rgba(255, 255, 255, 0.95);
-        padding: 20px;
-        border-radius: 15px;
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-        color: black;
-      }
+        .container {
+          background: rgba(255, 255, 255, 0.95);
+          padding: 20px;
+          border-radius: 15px;
+          box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+          color: black;
+        }
 
-      h1 {
-        font-weight: bold;
-        color: #343a40;
-      }
+        h1 {
+          font-weight: bold;
+          color: #343a40;
+        }
 
-      .stat-card {
-        background-color: #3498db;
-        color: white;
-        border-radius: 12px;
-        padding: 20px;
-        text-align: center;
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-        margin: 10px;
-      }
+        .stat-card {
+          background-color: #3498db;
+          color: white;
+          border-radius: 12px;
+          padding: 20px;
+          text-align: center;
+          box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+          margin: 10px;
+        }
 
-      .stat-card h2 {
-        font-size: 36px;
-        margin-bottom: 10px;
-      }
+        .stat-card h2 {
+          font-size: 36px;
+          margin-bottom: 10px;
+        }
 
-      .stat-card p {
-        font-size: 18px;
-      }
+        .stat-card p {
+          font-size: 18px;
+        }
 
-      .task-card {
-        background-color: #2ecc71;
-        color: white;
-        border-radius: 12px;
-        padding: 20px;
-        text-align: center;
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-        margin: 10px;
-      }
+        .task-card {
+          background-color: #2ecc71;
+          color: white;
+          border-radius: 12px;
+          padding: 20px;
+          text-align: center;
+          box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+          margin: 10px;
+        }
 
-      .task-card h2 {
-        font-size: 36px;
-        margin-bottom: 10px;
-      }
+        .task-card h2 {
+          font-size: 36px;
+          margin-bottom: 10px;
+        }
 
-      .task-card p {
-        font-size: 18px;
-      }
+        .task-card p {
+          font-size: 18px;
+        }
 
-      .btn-action {
-        background-color: #17a2b8;
-        padding: 10px 20px;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-      }
+        .btn-action {
+          background-color: #17a2b8;
+          padding: 10px 20px;
+          color: white;
+          border: none;
+          border-radius: 8px;
+          cursor: pointer;
+        }
 
-      .btn-action:hover {
-        background-color: #117a8b;
-      }
+        .btn-action:hover {
+          background-color: #117a8b;
+        }
 
-      /* Table */
-      .table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-      }
+        /* Table */
+        .table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 20px;
+        }
+.stats {
+  display: flex;          /* bật flexbox */
+  gap: 20px;              /* khoảng cách giữa các card */
+  justify-content: center;/* căn giữa toàn bộ */
+  flex-wrap: nowrap;      /* không xuống hàng */
+  margin-bottom: 30px;    /* khoảng cách dưới */
+}
 
-      .table th,
-      .table td {
-        padding: 12px;
-        text-align: left;
-        border-bottom: 1px solid #ddd;
-      }
+.stat-card {
+  flex: 1;                /* chia đều không gian */
+  max-width: 280px;       /* tối đa chiều ngang */
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+  background-color: #3498db;
+  color: white;
+}
 
-      .table th {
-        background-color: #2a5298;
-        color: white;
-      }
+        .table th,
+        .table td {
+          padding: 12px;
+          text-align: left;
+          border-bottom: 1px solid #ddd;
+        }
 
-      .table tbody tr:hover {
-        background-color: rgba(255, 255, 255, 0.4);
-      }
+        .table th {
+          background-color: #2a5298;
+          color: white;
+        }
 
-      .chart-container {
-        display: flex;
-        justify-content: space-between;
-        margin-top: 30px;
-      }
+        .table tbody tr:hover {
+          background-color: rgba(255, 255, 255, 0.4);
+        }
 
-      .chart-box {
-        width: 48%;
-        padding: 15px;
-        background-color: #f1f1f1;
-        border-radius: 8px;
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-      }
+        .chart-container {
+          display: flex;
+          justify-content: space-between;
+          margin-top: 30px;
+        }
 
-      .chart-box h5 {
-        font-weight: bold;
-        margin-bottom: 20px;
-      }
-      .menu-item.disabled {
-        pointer-events: none;
-        color: #6c757d;
-        background-color: #f8f9fa;
-      }
-      .menu-item.disabled:hover {
-        cursor: not-allowed;
-        background-color: #f8f9fa;
-      }
-      .chart-box .chart {
-        height: 300px;
-        background-color: #e9ecef;
-        border-radius: 8px;
-        padding: 10px;
-      }
-    </style>
-  </head>
+        .chart-box {
+          width: 48%;
+          padding: 15px;
+          background-color: #f1f1f1;
+          border-radius: 8px;
+          box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
 
-  <body>
-    <!-- Sidebar -->
-     
-    <div class="sidebar">
+        .chart-box h5 {
+          font-weight: bold;
+          margin-bottom: 20px;
+        }
+        .menu-item.disabled {
+          pointer-events: none;
+          color: #6c757d;
+          background-color: #f8f9fa;
+        }
+        .menu-item.disabled:hover {
+          cursor: not-allowed;
+          background-color: #f8f9fa;
+        }
+        .chart-box .chart {
+          height: 300px;
+          background-color: #e9ecef;
+          border-radius: 8px;
+          padding: 10px;
+        }
+      </style>
+    </head>
+
+    <body>
+      <!-- Sidebar -->
       
-      <h2 style="text-align: center; color: white; font-weight: bold">Menu</h2>
-      
-      <!-- Hiển thị tất cả các menu, nhưng sẽ disable nếu không có quyền -->
-      <a href="{{ url_for('home') }}" class="active"><i class="fas fa-home"></i> Trang Chủ</a>
+      <div class="sidebar">
+        
+        <h2 style="text-align: center; color: white; font-weight: bold">Menu</h2>
+        
+        <!-- Hiển thị tất cả các menu, nhưng sẽ disable nếu không có quyền -->
+        <a href="{{ url_for('home') }}" class="active"><i class="fas fa-home"></i> Trang Chủ</a>
 
-      <!-- Quản lý tài chính -->
-      <a href="{{ url_for('quan_li_tai_chinh') }}" 
-         class="menu-item {% if 'quan_li_tai_chinh' not in user_permissions %}disabled{% endif %}" 
-         {% if 'quan_li_tai_chinh' not in user_permissions %} style="pointer-events: none; color: #6c757d;" {% endif %}>
-          <i class="fas fa-chart-line"></i> Quản Lí Tài Chính
-      </a>
-      
-      <!-- Quản lý nhân sự -->
-      <a href="{{ url_for('quan_li_nhan_su') }}" 
-         class="menu-item {% if 'quan_li_nhan_su' not in user_permissions %}disabled{% endif %}" 
-         {% if 'quan_li_nhan_su' not in user_permissions %} style="pointer-events: none; color: #6c757d;" {% endif %}>
-          <i class="fas fa-users"></i> Quản Lí Nhân Sự
-      </a>
-      
-      <!-- Báo cáo tài chính -->
-      <a href="{{ url_for('bao_cao_tai_chinh') }}" 
-         class="menu-item {% if 'bao_cao_tai_chinh' not in user_permissions %}disabled{% endif %}" 
-         {% if 'bao_cao_tai_chinh' not in user_permissions %} style="pointer-events: none; color: #6c757d;" {% endif %}>
-          <i class="fas fa-chart-line"></i> Báo Cáo Tài Chính
-      </a>
-      
-      <!-- Phòng ban chức vụ -->
-      <a href="{{ url_for('phong_ban_chuc_vu') }}" 
-         class="menu-item {% if 'phong_ban_chuc_vu' not in user_permissions %}disabled{% endif %}" 
-         {% if 'phong_ban_chuc_vu' not in user_permissions %} style="pointer-events: none; color: #6c757d;" {% endif %}>
-          <i class="fas fa-shop"></i> Phòng Ban Và Chức Vụ
-      </a>
-      
-      <!-- Hồ sơ -->
-      <a href="{{ url_for('ho_so') }}" 
-         class="menu-item {% if 'ho_so' not in user_permissions %}disabled{% endif %}" 
-         {% if 'ho_so' not in user_permissions %} style="pointer-events: none; color: #6c757d;" {% endif %}>
-          <i class="fas fa-file"></i> Hồ Sơ
-      </a>
-      <a href="{{ url_for('canh_bao_thong_bao') }}"><i class="fas fa-bell"></i> Cảnh Báo Và Thông Báo</a>
-      <a href="{{ url_for('cai_dat') }}" ><i class="fas fa-user"></i> Tài Khoản</a>
-      <a href="{{ url_for('dang_xuat') }}"><i class="fas fa-sign-out-alt"></i> Đăng Xuất</a>
-      
-    </div>
-
-    <!-- Content -->    
-  </div>
-      <div class="container">
-        <h1><i class="fas fa-home"></i> Trang Chủ</h1><div class="user-info">
-          <h2>Chào, {{ session['username'] }}!</h2>
-          <h5>
-            {% if session['role'] == 'AD' %}
-              Bạn đang đăng nhập với quyền: <strong>AD</strong> - Quản trị viên đầy đủ quyền.
-            {% elif session['role'] == 'HRM' %}
-              Bạn đang đăng nhập với quyền: <strong>HRM</strong> - Quản lý nhân sự, không có quyền quản lý tài chính.
-            {% elif session['role'] == 'PM' %}
-              Bạn đang đăng nhập với quyền: <strong>PM</strong> - Quản lý dự án, không có quyền quản lý nhân sự.
-            {% elif session['role'] == 'EMP' %}
-              Bạn đang đăng nhập với quyền: <strong>Employee</strong> - Nhân viên, chỉ có quyền xem hồ sơ cá nhân.
-            {% endif %}
-          </h5>
-        </div> 
-        <!-- Statistics Cards -->
-        <div class="d-flex">
-          <div class="stat-card">
-           <h2>{{ total_employees }}</h2>
-      <p>Tổng Số Nhân Viên</p>
-
-          </div>
-
-          <div class="stat-card">
-            <h2>{{ working }}</h2>
-<p>Nhân Viên Đang Làm Việc</p>
-          </div>
-          <div class="stat-card">
-            <h2>{{ on_leave }}</h2>
-<p>Nhân Viên Nghỉ Phép</p>
-          </div>
-        </div>
-
-        <!-- Task Overview -->
-        <div class="d-flex">
-          <div class="task-card">
-            <h2>120</h2>
-            <p>Công Việc Hoàn Thành</p>
-          </div>
-          <div class="task-card">
-            <h2>80</h2>
-            <p>Công Việc Đang Xử Lý</p>
-          </div>
-          <div class="task-card">
-            <h2>40</h2>
-            <p>Công Việc Còn Lại</p>
-          </div>
-        </div>
-
-        <!-- Chart Container -->
-        <div class="chart-container mt-4">
-          <div class="chart-box">
-            <h5>Thống Kê Nhân Viên</h5>
-            <canvas id="employeeChart" class="chart"></canvas>
-          </div>
-          <div class="chart-box">
-            <h5>Thống Kê Công Việc</h5>
-            <canvas id="taskChart" class="chart"></canvas>
-          </div>
-        </div>
-         </tbody>
-        </table>
+        <!-- Quản lý tài chính -->
+        <a href="{{ url_for('quan_li_tai_chinh') }}" 
+          class="menu-item {% if 'quan_li_tai_chinh' not in user_permissions %}disabled{% endif %}" 
+          {% if 'quan_li_tai_chinh' not in user_permissions %} style="pointer-events: none; color: #6c757d;" {% endif %}>
+            <i class="fas fa-chart-line"></i> Quản Lí Tài Chính
+        </a>
+        
+        <!-- Quản lý nhân sự -->
+        <a href="{{ url_for('quan_li_nhan_su') }}" 
+          class="menu-item {% if 'quan_li_nhan_su' not in user_permissions %}disabled{% endif %}" 
+          {% if 'quan_li_nhan_su' not in user_permissions %} style="pointer-events: none; color: #6c757d;" {% endif %}>
+            <i class="fas fa-users"></i> Quản Lí Nhân Sự
+        </a>
+        
+        <!-- Báo cáo tài chính -->
+        <a href="{{ url_for('bao_cao_tai_chinh') }}" 
+          class="menu-item {% if 'bao_cao_tai_chinh' not in user_permissions %}disabled{% endif %}" 
+          {% if 'bao_cao_tai_chinh' not in user_permissions %} style="pointer-events: none; color: #6c757d;" {% endif %}>
+            <i class="fas fa-chart-line"></i> Báo Cáo Tài Chính
+        </a>
+        
+        <!-- Phòng ban chức vụ -->
+        <a href="{{ url_for('phong_ban_chuc_vu') }}" 
+          class="menu-item {% if 'phong_ban_chuc_vu' not in user_permissions %}disabled{% endif %}" 
+          {% if 'phong_ban_chuc_vu' not in user_permissions %} style="pointer-events: none; color: #6c757d;" {% endif %}>
+            <i class="fas fa-shop"></i> Phòng Ban Và Chức Vụ
+        </a>
+        
+        <!-- Hồ sơ -->
+        <a href="{{ url_for('ho_so') }}" 
+          class="menu-item {% if 'ho_so' not in user_permissions %}disabled{% endif %}" 
+          {% if 'ho_so' not in user_permissions %} style="pointer-events: none; color: #6c757d;" {% endif %}>
+            <i class="fas fa-file"></i> Hồ Sơ
+        </a>
+        <a href="{{ url_for('canh_bao_thong_bao') }}"><i class="fas fa-bell"></i> Cảnh Báo Và Thông Báo</a>
+        <a href="{{ url_for('cai_dat') }}"><i class="fas fa-cogs"></i> Cài Đặt</a>
+        <a href="{{ url_for('dang_xuat') }}"><i class="fas fa-sign-out-alt"></i> Đăng Xuất</a>
+        
       </div>
+
+      <!-- Content -->    
     </div>
-<script>
-  // Biểu đồ nhân viên với số liệu tĩnh
-  const ctx1 = document.getElementById("employeeChart").getContext("2d");
-  new Chart(ctx1, {
-    type: "pie",
-    data: {
-      labels: ["Đang làm việc", "Nghỉ phép", "Đã nghỉ việc"],
-      datasets: [{
-        data: [10, 5, 20],  // Số liệu mẫu
-        backgroundColor: ["#28a745", "#ffc107", "#dc3545"]
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { position: "top" } }
-    }
-  });
+        <div class="container">
+          <h1><i class="fas fa-home"></i> Trang Chủ</h1><div class="user-info">
+            <h2>Chào, {{ session['username'] }}!</h2>
+            <h5>
+              {% if session['role'] == 'AD' %}
+                Bạn đang đăng nhập với quyền: <strong>AD</strong> - Quản trị viên đầy đủ quyền.
+              {% elif session['role'] == 'HRM' %}
+                Bạn đang đăng nhập với quyền: <strong>HRM</strong> - Quản lý nhân sự, không có quyền quản lý tài chính.
+              {% elif session['role'] == 'PM' %}
+                Bạn đang đăng nhập với quyền: <strong>PM</strong> - Quản lý dự án, không có quyền quản lý nhân sự.
+              {% elif session['role'] == 'EMP' %}
+                Bạn đang đăng nhập với quyền: <strong>Employee</strong> - Nhân viên, chỉ có quyền xem hồ sơ cá nhân.
+              {% endif %}
+            </h5>
+          </div> 
+          <!-- Statistics Cards -->
+          <body>
+    <div class="dashboard">
+      
 
-  // Biểu đồ công việc với số liệu tĩnh
-  const ctx2 = document.getElementById("taskChart").getContext("2d");
-  new Chart(ctx2, {
-    type: "bar",
-    data: {
-      labels: ["Hoàn Thành", "Đang Xử Lý", "Còn Lại"],
-      datasets: [{
-        label: "Công Việc",
-        data: [15, 8, 7],  // Số liệu mẫu
-        backgroundColor: "#007bff",
-        borderColor: "#0056b3",
-        borderWidth: 1
-      }]
-    },
-    options: {
-      responsive: true,
-      scales: { y: { beginAtZero: true } },
-      plugins: { legend: { position: "top" } }
-    }
-  });
-</script>
+      <div class="stats d-flex gap-3">
+  <div class="stat-card bg-primary text-white">
+    <h2>{{ 10}}</h2>
+    <p>Tổng Số Nhân Viên</p>
+  </div>
+  <div class="stat-card bg-primary text-white">
+    <h2>{{ 9 }}</h2>
+    <p>Nhân Viên Đang Làm Việc</p>
+  </div>
+  <div class="stat-card bg-primary text-white">
+    <h2>{{ 1 }}</h2>
+    <p>Nhân Viên Nghỉ Việc</p>
+  </div>
+</div>
 
-</script>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Chart.js -->
+      <div class="alerts" id="alerts">
+        <!-- Các nhóm cảnh báo sẽ được tạo động bằng JS -->
+      </div>
+
+      <div class="charts d-flex gap-4 mt-4">
+  <div class="chart-box">
+    <h5>Thống Kê Nhân Viên</h5>
+    <canvas id="employeeChart"></canvas>
+  </div>
+  <div class="chart-box">
+    <h5>Biểu Đồ Lương</h5>
+    <canvas id="salaryChart"></canvas>
+  </div>
+</div>
+
+    </div>
+
+    <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  
-    
+
+    <script>
+      // Dữ liệu ảo
+      const data = {
+        totalEmployees: 150,
+        working: 10,
+        onLeave: 1,
+        quickNotifications: [
+          
+        ],
+        salaryLabels: ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4"],
+        salaryData: [12000000, 13000000, 12500000, 14000000]
+      };
+
+      // Hàm chạy hiệu ứng đếm số
+      function animateCount(id, to) {
+        let el = document.getElementById(id);
+        let count = 0;
+        let step = Math.ceil(to / 100);
+        let interval = setInterval(() => {
+          count += step;
+          if (count >= to) {
+            count = to;
+            clearInterval(interval);
+          }
+          el.textContent = count.toLocaleString();
+        }, 15);
+      }
+
+      // Hiển thị số liệu
+      animateCount("totalEmployees", data.totalEmployees);
+      animateCount("workingEmployees", data.working);
+      animateCount("onLeaveEmployees", data.onLeave);
+
+      // Hiển thị cảnh báo
+      const alertsContainer = document.getElementById("alerts");
+      data.quickNotifications.forEach(group => {
+        let div = document.createElement("div");
+        div.className = `alert alert-${group.type}`;
+        let title = document.createElement("h3");
+        title.textContent = group.title;
+        div.appendChild(title);
+        let ul = document.createElement("ul");
+        group.items.forEach(item => {
+          let li = document.createElement("li");
+          li.textContent = item;
+          ul.appendChild(li);
+        });
+        div.appendChild(ul);
+        alertsContainer.appendChild(div);
+      });
+
+      // Biểu đồ nhân viên
+      const ctxEmp = document.getElementById("employeeChart").getContext("2d");
+      const employeeChart = new Chart(ctxEmp, {
+        type: "doughnut",
+        data: {
+          labels: ["Đang làm việc", "Nghỉ việc"],
+          datasets: [{
+            label: "Nhân Viên",
+            data: [data.working, data.onLeave],
+            backgroundColor: ["#28a745", "#dc3545"]
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: "bottom" },
+            tooltip: { enabled: true }
+          }
+        }
+      });
+
+      // Biểu đồ lương
+      const ctxSalary = document.getElementById("salaryChart").getContext("2d");
+      const salaryChart = new Chart(ctxSalary, {
+        type: "bar",
+        data: {
+          labels: data.salaryLabels,
+          datasets: [{
+            label: "Lương (VND)",
+            data: data.salaryData,
+            backgroundColor: "#28a745"
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: { y: { beginAtZero: true } },
+          plugins: { legend: { position: "top" } }
+        }
+      });
+    </script>
   </body>
-</html>
+    </body>
+  </html>

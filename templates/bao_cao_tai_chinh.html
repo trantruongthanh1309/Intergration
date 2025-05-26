@@ -265,14 +265,15 @@
           </tr>
         </thead>
         <tbody>
-          {% for dept, total, danglam, nghiviec in ns_sql %}
-          <tr>
-            <td>{{ dept }}</td>
-            <td>{{ total }}</td>
-            <td>{{ danglam }}</td>
-            <td>{{ nghiviec }}</td>
-          </tr>
-          {% endfor %}
+                {% for dept, total, danglam, nghiviec in ns_all %}
+      <tr>
+        <td>{{ dept }}</td>
+        <td>{{ total }}</td>
+        <td>{{ danglam }}</td>
+        <td>{{ nghiviec }}</td>
+      </tr>
+      {% endfor %}
+
         </tbody>
       </table>
     </div>
@@ -294,14 +295,15 @@
           </tr>
         </thead>
         <tbody>
-          {% for dept, total_sal, avg_sal, latest in luong_sql %}
-          <tr>
-            <td>{{ dept }}</td>
-            <td>{{ "{:,.0f}".format(total_sal) }}</td>
-            <td>{{ "{:,.0f}".format(avg_sal) }}</td>
-            <td>{{ latest.strftime('%Y-%m') }}</td>
-          </tr>
-          {% endfor %}
+                  
+        {% for dept, total_sal, avg_sal, latest in luong_all %}
+        <tr>
+          <td>{{ dept }}</td>
+          <td>{{ "{:,.0f}".format(total_sal) }}</td>
+          <td>{{ "{:,.0f}".format(avg_sal) }}</td>
+          <td>{{ latest.strftime('%Y-%m') if latest else '' }}</td>
+        </tr>
+        {% endfor %}
         </tbody>
       </table>
     </div>

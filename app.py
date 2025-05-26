@@ -13,6 +13,8 @@ import random
 import string
 import time
 import os
+from flask import request, session, flash, redirect, url_for, render_template
+from werkzeug.security import check_password_hash
 
 app = Flask(__name__)
 app.secret_key = 'x3$9#1yPqT!vN8*7zLd@fG2kWmS'
@@ -306,7 +308,7 @@ def login():
         password = request.form.get('password')
 
         user = User.query.filter_by(username=username).first()
-        if user and user.password == password:
+        if user and check_password_hash(user.password, password):
             session['user_id'] = user.user_id
             session['role'] = user.role.role_code
             session['logged_in'] = True
@@ -315,9 +317,6 @@ def login():
         else:
             flash('Sai tên đăng nhập hoặc mật khẩu', 'danger')
     return render_template('login.html')
-
-
-
 
 @app.route("/home")
 def home():
@@ -440,11 +439,10 @@ def them_nhan_vien():
     password = request.form["password"]
 
     email = request.form.get("email")
-    birth_date = request.form.get("birth_date")  # định dạng yyyy-mm-dd
+    birth_date = request.form.get("birth_date")  # yyyy-mm-dd
     gender = request.form.get("gender")
     join_date = request.form.get("join_date")
 
-    from datetime import datetime
     def to_date(d):
         try:
             return datetime.strptime(d, "%Y-%m-%d") if d else None
@@ -495,11 +493,11 @@ def them_nhan_vien():
     )
     db.session.add(nv_mysql)
 
-    # Thêm user mới
+    # Thêm user mới với mật khẩu đã băm
     user = User(
         user_id=employee_id,
         username=username,
-        password=password,  # bạn có thể hash password trước khi lưu
+        password=generate_password_hash(password),  # Băm mật khẩu trước khi lưu
         role_id=role_id,
         email=email,
         phone_number=None,
@@ -514,7 +512,6 @@ def them_nhan_vien():
 
 
 
-
 @app.route("/cap-nhat-nhan-vien/<int:ma_nv>", methods=["POST"])
 def cap_nhat_nhan_vien(ma_nv):
     nv_sql = EmployeeSQL.query.get(ma_nv)
@@ -526,7 +523,6 @@ def cap_nhat_nhan_vien(ma_nv):
     position_id = request.form.get("chuc_vu")
     status = request.form.get("trang_thai", "Đang làm")
 
-    # Thêm trường mở rộng
     username = request.form.get("username")
     password = request.form.get("password")
     role_id = request.form.get("role_id")
@@ -546,7 +542,8 @@ def cap_nhat_nhan_vien(ma_nv):
     join_date_dt = to_date(join_date)
 
     if not nv_sql and not nv_mysql:
-        return "Không tìm thấy nhân viên", 404
+        flash("Không tìm thấy nhân viên!", "danger")
+        return redirect(url_for("quan_li_nhan_su"))
 
     if nv_sql:
         nv_sql.FullName = full_name
@@ -572,16 +569,20 @@ def cap_nhat_nhan_vien(ma_nv):
     if user:
         user.username = username
         if password:
-            user.password = password  # Bạn nên hash password trước khi lưu
+            user.password = generate_password_hash(password)  # Băm mật khẩu nếu có đổi
         user.role_id = role_id
         user.email = email
         user.birth_date = birth_date_dt
         db.session.add(user)
     else:
+        if not password:
+            flash("Mật khẩu không được để trống khi tạo mới người dùng!", "danger")
+            return redirect(url_for("quan_li_nhan_su"))
+        
         new_user = User(
             user_id=ma_nv,
             username=username,
-            password=password,
+            password=generate_password_hash(password),
             role_id=role_id,
             email=email,
             phone_number=None,
@@ -591,6 +592,7 @@ def cap_nhat_nhan_vien(ma_nv):
         db.session.add(new_user)
 
     db.session.commit()
+    flash("Cập nhật nhân viên thành công!", "success")
     return redirect(url_for("quan_li_nhan_su"))
 
 
@@ -866,8 +868,6 @@ def phong_ban_chuc_vu():
         user_permissions=user_permissions,
     )
 
-
-
 @app.route("/bao-cao-tai-chinh")
 def bao_cao_tai_chinh():
     role = session.get("role")
@@ -885,73 +885,124 @@ def bao_cao_tai_chinh():
     }
     user_permissions = permissions.get(role, [])
 
-    # Báo cáo nhân sự
+    # Lấy tên phòng ban, tạo dict DepartmentID -> DepartmentName
+    deps_sql = DepartmentSQL.query.all()
+    deps_mysql = DepartmentMySQL.query.all()
+    all_deps = {}
+    for d in deps_sql + deps_mysql:
+        all_deps[d.DepartmentID] = d.DepartmentName
+
+    # Lấy dữ liệu nhân sự từ SQL Server
     bao_cao_nhan_su_sql = (
         db.session.query(
-            DepartmentSQL.DepartmentName.label("dept"),
+            DepartmentSQL.DepartmentID.label("dept_id"),
             db.func.count(EmployeeSQL.EmployeeID).label("total"),
-            db.func.sum(db.case((EmployeeSQL.Status == "Đang làm", 1), else_=0)).label(
-                "danglam"
-            ),
-            db.func.sum(db.case((EmployeeSQL.Status == "Nghỉ việc", 1), else_=0)).label(
-                "nghiviec"
-            ),
+            db.func.sum(db.case((EmployeeSQL.Status == "Đang làm", 1), else_=0)).label("danglam"),
+            db.func.sum(db.case((EmployeeSQL.Status == "Nghỉ việc", 1), else_=0)).label("nghiviec"),
         )
         .join(EmployeeSQL, DepartmentSQL.DepartmentID == EmployeeSQL.DepartmentID)
-        .group_by(DepartmentSQL.DepartmentName)
+        .group_by(DepartmentSQL.DepartmentID)
         .all()
     )
+    # Lấy dữ liệu nhân sự từ MySQL
     bao_cao_nhan_su_mysql = (
         db.session.query(
-            DepartmentMySQL.DepartmentName.label("dept"),
+            DepartmentMySQL.DepartmentID.label("dept_id"),
             db.func.count(EmployeeMySQL.EmployeeID).label("total"),
-            db.func.sum(db.case((EmployeeMySQL.Status == "Đang làm", 1), else_=0)).label(
-                "danglam"
-            ),
-            db.func.sum(db.case((EmployeeMySQL.Status == "Nghỉ việc", 1), else_=0)).label(
-                "nghiviec"
-            ),
+            db.func.sum(db.case((EmployeeMySQL.Status == "Đang làm", 1), else_=0)).label("danglam"),
+            db.func.sum(db.case((EmployeeMySQL.Status == "Nghỉ việc", 1), else_=0)).label("nghiviec"),
         )
         .join(EmployeeMySQL, DepartmentMySQL.DepartmentID == EmployeeMySQL.DepartmentID)
-        .group_by(DepartmentMySQL.DepartmentName)
+        .group_by(DepartmentMySQL.DepartmentID)
         .all()
     )
 
-    # Báo cáo lương
+    # Tạo dict ưu tiên dữ liệu SQL Server trước
+    nhan_su_dict = {}
+    for rec in bao_cao_nhan_su_sql:
+        nhan_su_dict[rec.dept_id] = {
+            "total": rec.total,
+            "danglam": rec.danglam,
+            "nghiviec": rec.nghiviec,
+        }
+
+    # Thêm dữ liệu MySQL nếu dept_id chưa tồn tại trong SQL Server
+    for rec in bao_cao_nhan_su_mysql:
+        if rec.dept_id not in nhan_su_dict:
+            nhan_su_dict[rec.dept_id] = {
+                "total": rec.total,
+                "danglam": rec.danglam,
+                "nghiviec": rec.nghiviec,
+            }
+
+    ns_all = [
+        (all_deps.get(dept_id, "N/A"), v["total"], v["danglam"], v["nghiviec"])
+        for dept_id, v in nhan_su_dict.items()
+    ]
+
+    # Lấy dữ liệu lương từ SQL Server
     bao_cao_luong_sql = (
         db.session.query(
-            DepartmentSQL.DepartmentName.label("dept"),
+            DepartmentSQL.DepartmentID.label("dept_id"),
             db.func.sum(SalarySQL.NetSalary).label("total_salary"),
-            db.func.avg(SalarySQL.NetSalary).label("avg_salary"),
+            db.func.count(SalarySQL.EmployeeID).label("count"),
             db.func.max(SalarySQL.SalaryMonth).label("latest_month"),
         )
         .join(EmployeeSQL, DepartmentSQL.DepartmentID == EmployeeSQL.DepartmentID)
         .join(SalarySQL, SalarySQL.EmployeeID == EmployeeSQL.EmployeeID)
-        .group_by(DepartmentSQL.DepartmentName)
+        .group_by(DepartmentSQL.DepartmentID)
         .all()
     )
+    # Lấy dữ liệu lương từ MySQL
     bao_cao_luong_mysql = (
         db.session.query(
-            DepartmentMySQL.DepartmentName.label("dept"),
+            DepartmentMySQL.DepartmentID.label("dept_id"),
             db.func.sum(SalaryMySQL.NetSalary).label("total_salary"),
-            db.func.avg(SalaryMySQL.NetSalary).label("avg_salary"),
+            db.func.count(SalaryMySQL.EmployeeID).label("count"),
             db.func.max(SalaryMySQL.SalaryMonth).label("latest_month"),
         )
         .join(EmployeeMySQL, DepartmentMySQL.DepartmentID == EmployeeMySQL.DepartmentID)
         .join(SalaryMySQL, SalaryMySQL.EmployeeID == EmployeeMySQL.EmployeeID)
-        .group_by(DepartmentMySQL.DepartmentName)
+        .group_by(DepartmentMySQL.DepartmentID)
         .all()
     )
 
+    # Tạo dict ưu tiên dữ liệu SQL Server trước
+    luong_dict = {}
+    for rec in bao_cao_luong_sql:
+        luong_dict[rec.dept_id] = {
+            "total_salary": rec.total_salary or 0,
+            "count": rec.count or 0,
+            "latest_month": rec.latest_month,
+        }
+
+    # Thêm dữ liệu MySQL nếu dept_id chưa tồn tại trong SQL Server
+    for rec in bao_cao_luong_mysql:
+        if rec.dept_id not in luong_dict:
+            luong_dict[rec.dept_id] = {
+                "total_salary": rec.total_salary or 0,
+                "count": rec.count or 0,
+                "latest_month": rec.latest_month,
+            }
+
+    luong_all = [
+        (
+            all_deps.get(dept_id, "N/A"),
+            val["total_salary"],
+            int(val["total_salary"] / val["count"]) if val["count"] else 0,
+            val["latest_month"],
+        )
+        for dept_id, val in luong_dict.items()
+    ]
+
     return render_template(
         "bao_cao_tai_chinh.html",
-        ns_sql=bao_cao_nhan_su_sql,
-        ns_mysql=bao_cao_nhan_su_mysql,
-        luong_sql=bao_cao_luong_sql,
-        luong_mysql=bao_cao_luong_mysql,
+        ns_all=ns_all,
+        luong_all=luong_all,
         role=role,
         user_permissions=user_permissions,
     )
+
 
 
 @app.route("/ho_so", methods=["GET", "POST"])
@@ -961,7 +1012,7 @@ def ho_so():
 
     role = session.get("role")
     employee_id = session.get("employee_id")  # Lấy employee_id của người đang đăng nhập
-
+    attendances = []
     permissions = {
         "ADMIN": [
             "quan_li_tai_chinh",
@@ -1021,14 +1072,7 @@ def ho_so():
 
 @app.route("/cham_cong_ho_so", methods=["POST"])
 def cham_cong_ho_so():
-    if "logged_in" not in session or session.get("role") != "EMP":
-        return redirect(url_for("login"))
-
     employee_id = session.get("employee_id")
-    if not employee_id:
-        flash("Không tìm thấy mã nhân viên.", "danger")
-        return redirect(url_for("ho_so"))
-
     attendance_month = request.form.get("attendance_month") + "-01"
     work_days = int(request.form.get("work_days"))
     absent_days = int(request.form.get("absent_days"))
@@ -1186,16 +1230,35 @@ def canh_bao_thong_bao():
                            role=role,
                            user_permissions=user_permissions)
 
+class PayrollSalary(db.Model):
+    __bind_key__ = 'payroll'  # nếu bạn dùng nhiều DB, nếu không bỏ dòng này
+    __tablename__ = 'payroll_salary'
 
-@app.route("/dashboard")
+    id = db.Column(db.Integer, primary_key=True)
+    month = db.Column(db.String(20))  # Tháng, vd "Tháng 1"
+    amount = db.Column(db.Integer)    # Số tiền lương
+
+@app.route('/dashboard')
 def dashboard():
-    if "logged_in" not in session:
-        return redirect(url_for("login"))  # Kiểm tra đăng nhập
+    # Chỉ lấy từ 1 bảng (ví dụ EmployeeSQL)
+    total_employees = EmployeeSQL.query.count()
 
-    role = session.get("role")  # Lấy vai trò từ session
-    username = session.get("username")  # Lấy tên người dùng từ session
+    working = EmployeeSQL.query.filter(EmployeeSQL.Status == 'Đang làm').count()
 
-    return render_template("index.html", role=role, username=username)  # Truyền vai trò và tên người dùng vào template
+    on_leave = EmployeeSQL.query.filter(EmployeeSQL.Status == 'Nghỉ việc').count()
+
+    # Dữ liệu biểu đồ lương mẫu (hoặc từ DB nếu bạn muốn)
+    salary_labels = ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4"]
+    salary_data = [12000000, 13000000, 12500000, 14000000]
+
+    return render_template('dashboard.html',
+                           total_employees=total_employees,
+                           working=working,
+                           on_leave=on_leave,
+                           salary_labels=salary_labels,
+                           salary_data=salary_data)
+
+
 
 
 @app.route("/login", methods=["POST"])
@@ -1203,20 +1266,19 @@ def handle_login():
     username = request.form.get("username")
     password = request.form.get("password")
 
-    # Tìm người dùng từ bảng User
     user = User.query.filter_by(username=username).first()
 
     # Kiểm tra mật khẩu và nếu đúng, lưu thông tin vào session
-    if user and user.password == password:
+    if user and check_password_hash(user.password, password):
         session["logged_in"] = True
-        session["role"] = user.role.role_code
+        session["role"] = user.role.role_code if user.role else None
         session["username"] = user.username
         session["email"] = user.email
         session["phone_number"] = user.phone_number
         session["address"] = user.address
         session["birth_date"] = user.birth_date
 
-        session["employee_id"] = user.user_id  # ✅ Quan trọng: lưu mã nhân viên để lấy thông tin chi tiết
+        session["employee_id"] = user.user_id  # Quan trọng: lưu mã nhân viên để lấy thông tin chi tiết
 
         flash("Đăng nhập thành công!", "success")
         return redirect(url_for("home"))
@@ -1311,11 +1373,11 @@ from flask import send_file
 
 @app.route("/xuat-nhan-vien")
 def xuat_excel_nhan_vien():
-    # ✅ Lấy dữ liệu nhân viên từ cả SQL Server và MySQL
+    # Lấy dữ liệu nhân viên từ cả SQL Server và MySQL
     emps_sql = EmployeeSQL.query.all()
     emps_mysql = EmployeeMySQL.query.all()
 
-    # ✅ Ưu tiên bản SQL nếu bị trùng EmployeeID
+    # Ưu tiên bản SQL nếu bị trùng EmployeeID
     combined = {}
     for emp in emps_mysql + emps_sql:
         combined[emp.EmployeeID] = emp  # SQL sẽ ghi đè
@@ -1327,10 +1389,14 @@ def xuat_excel_nhan_vien():
             "Họ Tên": emp.FullName,
             "Phòng Ban": emp.department.DepartmentName if emp.department else "N/A",
             "Chức Vụ": emp.position.PositionName if emp.position else "N/A",
-            "Trạng Thái": emp.Status
+            "Trạng Thái": emp.Status,
+            "Email": getattr(emp, "Email", "N/A") or "N/A",  # Phòng trường hợp không có trường Email
+            "Ngày sinh": emp.BirthDate.strftime('%d/%m/%Y') if getattr(emp, "BirthDate", None) else "N/A",
+            "Giới tính": getattr(emp, "Gender", "N/A") or "N/A",
+            "Ngày vào làm": emp.JoinDate.strftime('%d/%m/%Y') if getattr(emp, "JoinDate", None) else "N/A"
         })
 
-    # ✅ Xuất ra Excel
+    # Xuất ra Excel
     df = pd.DataFrame(data)
     output = io.BytesIO()
     with pd.ExcelWriter(output, engine="openpyxl") as writer:
@@ -1338,6 +1404,7 @@ def xuat_excel_nhan_vien():
     output.seek(0)
 
     return send_file(output, download_name="nhan_vien.xlsx", as_attachment=True)
+
 
 @app.route('/xuat-phongban')
 def xuat_phongban():
@@ -1361,19 +1428,44 @@ def xuat_phongban():
     output.seek(0)
 
     return send_file(output, download_name="phong_ban_chuc_vu.xlsx", as_attachment=True)
+
 @app.route("/xuat-luong-chamcong")
 def xuat_luong_chamcong():
-    # Lấy dữ liệu lương (2 bảng)
+    # Lấy dữ liệu lương từ 2 bảng
     salaries_sql = SalarySQL.query.all()
     salaries_mysql = SalaryMySQL.query.all()
     salaries = salaries_sql + salaries_mysql
 
-    # Lấy dữ liệu chấm công (2 bảng)
+    # Gộp lương theo EmployeeID lấy bản mới nhất
+    latest_salaries = {}
+    for s in salaries:
+        emp_id = s.EmployeeID
+        if emp_id not in latest_salaries:
+            latest_salaries[emp_id] = s
+        else:
+            existing = latest_salaries[emp_id]
+            if (s.SalaryMonth and existing.SalaryMonth and s.SalaryMonth > existing.SalaryMonth) or \
+               (hasattr(s, 'CreatedAt') and hasattr(existing, 'CreatedAt') and s.CreatedAt > existing.CreatedAt):
+                latest_salaries[emp_id] = s
+
+    # Lấy dữ liệu chấm công từ 2 bảng
     attendance_sql = AttendanceSQL.query.all()
     attendance_mysql = AttendanceMySQL.query.all()
     attendances = attendance_sql + attendance_mysql
 
-    # Chuyển sang DataFrame - bảng lương
+    # Gộp chấm công theo EmployeeID lấy bản mới nhất
+    latest_attendances = {}
+    for c in attendances:
+        emp_id = c.EmployeeID
+        if emp_id not in latest_attendances:
+            latest_attendances[emp_id] = c
+        else:
+            existing = latest_attendances[emp_id]
+            if (c.AttendanceMonth and existing.AttendanceMonth and c.AttendanceMonth > existing.AttendanceMonth) or \
+               (hasattr(c, 'CreatedAt') and hasattr(existing, 'CreatedAt') and c.CreatedAt > existing.CreatedAt):
+                latest_attendances[emp_id] = c
+
+    # Tạo DataFrame từ dữ liệu lương và chấm công đã gộp
     df_luong = pd.DataFrame([{
         "Mã Lương": s.SalaryID,
         "Mã NV": s.EmployeeID,
@@ -1382,19 +1474,18 @@ def xuat_luong_chamcong():
         "Thưởng": s.Bonus,
         "Khấu Trừ": s.Deductions,
         "Lương Thực Nhận": s.NetSalary,
-        "Ngày Tạo": s.SalaryCreated.strftime("%d/%m/%Y %H:%M") if hasattr(s, 'SalaryCreated') and s.SalaryCreated else ""
-    } for s in salaries])
+        "Ngày Tạo": s.CreatedAt.strftime("%d/%m/%Y %H:%M") if hasattr(s, 'CreatedAt') and s.CreatedAt else ""
+    } for s in latest_salaries.values()])
 
-    # Chuyển sang DataFrame - bảng chấm công
     df_cc = pd.DataFrame([{
         "Mã NV": c.EmployeeID,
         "Tháng": c.AttendanceMonth.strftime("%Y-%m") if c.AttendanceMonth else "",
         "Ngày Làm Việc": c.WorkDays,
         "Ngày Vắng": c.AbsentDays,
         "Ngày Nghỉ Phép": c.LeaveDays
-    } for c in attendances])
+    } for c in latest_attendances.values()])
 
-    # Xuất file Excel
+    # Xuất file Excel với 2 sheet
     output = io.BytesIO()
     with pd.ExcelWriter(output, engine="openpyxl") as writer:
         df_luong.to_excel(writer, index=False, sheet_name="Luong")
@@ -1403,34 +1494,53 @@ def xuat_luong_chamcong():
     output.seek(0)
     return send_file(output, download_name="luong_cham_cong.xlsx", as_attachment=True)
 
+
 @app.route("/xuat-bao-cao")
 def xuat_bao_cao():
-    # Lấy nhân viên từ SQL + MySQL
+    # Lấy nhân viên
     employees_sql = EmployeeSQL.query.all()
     employees_mysql = EmployeeMySQL.query.all()
-    all_employees = employees_sql + employees_mysql
+    # Ưu tiên bản SQL Server, nếu trùng sẽ ghi đè MySQL
+    emp_dict = {emp.EmployeeID: emp for emp in employees_mysql}
+    emp_dict.update({emp.EmployeeID: emp for emp in employees_sql})
+    all_employees = list(emp_dict.values())
 
-    # Lấy lương từ SQL + MySQL
+    # Lấy lương
     salaries_sql = SalarySQL.query.all()
     salaries_mysql = SalaryMySQL.query.all()
-    all_salaries = salaries_sql + salaries_mysql
+    sal_dict = {}
+    for s in salaries_mysql:
+        sal_dict[s.EmployeeID] = s
+    for s in salaries_sql:
+        sal_dict[s.EmployeeID] = s  # ghi đè nếu trùng EmployeeID
+    all_salaries = list(sal_dict.values())
 
     # Lấy thông tin phòng ban
     deps_sql = DepartmentSQL.query.all()
     deps_mysql = DepartmentMySQL.query.all()
-    all_deps = {d.DepartmentID: d.DepartmentName for d in deps_sql + deps_mysql}
+    dep_dict = {d.DepartmentID: d.DepartmentName for d in deps_mysql}
+    dep_dict.update({d.DepartmentID: d.DepartmentName for d in deps_sql})
+    all_deps = dep_dict
 
-    # --- Báo cáo nhân sự ---
+    # Báo cáo nhân sự
+    nhan_su = {}
+    # Báo cáo nhân sự
     nhan_su = {}
     for emp in all_employees:
         dept_name = all_deps.get(emp.DepartmentID, "N/A")
         if dept_name not in nhan_su:
             nhan_su[dept_name] = {"Tổng NV": 0, "Đang Làm": 0, "Nghỉ Việc": 0}
         nhan_su[dept_name]["Tổng NV"] += 1
-        if emp.Status == "Đang làm":
+
+        status_clean = emp.Status.strip().lower() if emp.Status else ""
+        print(f"Status raw: {repr(emp.Status)}, cleaned: {status_clean}")  # Debug xem giá trị thực tế
+
+        if status_clean == "đang làm":
             nhan_su[dept_name]["Đang Làm"] += 1
-        else:
+        elif status_clean == "nghỉ việc" or status_clean == "nghỉ việc?c?":  # có thể sửa thêm ký tự lạ
             nhan_su[dept_name]["Nghỉ Việc"] += 1
+
+
 
     df_nhansu = pd.DataFrame([
         {
@@ -1442,7 +1552,7 @@ def xuat_bao_cao():
         for k, v in nhan_su.items()
     ])
 
-    # --- Báo cáo lương ---
+    # Báo cáo lương
     luong = {}
     for s in all_salaries:
         emp = next((e for e in all_employees if e.EmployeeID == s.EmployeeID), None)
@@ -1463,14 +1573,14 @@ def xuat_bao_cao():
     df_luong = pd.DataFrame([
         {
             "Phòng Ban": k,
-            "Tổng Lương": v["Tổng Lương"],
-            "Lương Trung Bình": int(v["Tổng Lương"] / v["Số Người"]) if v["Số Người"] else 0,
+            "Tổng Lương": "{:,.0f}".format(v["Tổng Lương"]),
+            "Lương Trung Bình": "{:,.0f}".format(v["Tổng Lương"] / v["Số Người"]) if v["Số Người"] else "0",
             "Tháng Gần Nhất": v["Tháng Gần Nhất"].strftime("%Y-%m") if v["Tháng Gần Nhất"] else ""
         }
         for k, v in luong.items()
     ])
 
-    # --- Xuất Excel ---
+    # Xuất Excel
     output = io.BytesIO()
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
         df_nhansu.to_excel(writer, index=False, sheet_name='NhanSu')
@@ -1478,6 +1588,7 @@ def xuat_bao_cao():
 
     output.seek(0)
     return send_file(output, download_name="bao_cao_thong_ke.xlsx", as_attachment=True)
+
 
 import pandas as pd
 
@@ -1813,11 +1924,15 @@ def face_login():
             if matches[0]:  # Nếu trùng khớp
                 # Lưu thông tin đăng nhập vào session
                 session['logged_in'] = True
+                session['employee_id'] = user.user_id
                 session['user_id'] = user.user_id
                 session['username'] = user.username
-                session['role'] = user.role_id
+                session['role'] = user.role.role_code if user.role else None
+                session['email'] = user.email
+                session['phone_number'] = user.phone_number
+                session['birth_date'] = user.birth_date
 
-                # Đăng nhập thành công
+
                 return jsonify({
                     'success': True,
                     'message': 'Đăng nhập thành công',
@@ -1928,7 +2043,6 @@ def api_login_face():
 
     return jsonify({'success': False, 'message': 'Khuôn mặt không khớp'}), 401
 
-from werkzeug.security import check_password_hash, generate_password_hash
 
 @app.route("/cai-dat", methods=["GET", "POST"])
 def cai_dat():
@@ -2147,6 +2261,16 @@ def gui_email_da_chon():
 
     return f"✅ Đã gửi email cho {count} nhân viên được chọn."
 
+@app.route('/chuc-vu/<int:id>/nhan-vien')
+def get_employees_by_position(id):
+    employees = EmployeeSQL.query.filter(EmployeeSQL.PositionID == id).all()
+    result = [{
+        "id": emp.EmployeeID,
+        "name": emp.FullName,
+        "department": emp.Department.name if emp.Department else "Không rõ",
+        "status": emp.Status
+    } for emp in employees]
+    return jsonify(result)
 
 if __name__ == "__main__":
     app.run(debug=True)

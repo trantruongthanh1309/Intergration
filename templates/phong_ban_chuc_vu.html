@@ -360,6 +360,7 @@
           <th>ID</th>
           <th>Tên chức vụ</th>
           <th>Hành động</th>
+          <th>Chi tiết</th>
         </tr>
       </thead>
       <tbody>
@@ -395,13 +396,47 @@
             <form method="POST" action="{{ url_for('xoa_chuc_vu', id=p.id) }}" style="display:inline-block;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa chức vụ này?');">
               <button type="submit" class="btn btn-danger btn-sm">Xóa</button>
             </form>
+              <td>
+      <button
+        class="btn btn-info btn-sm"
+        onclick='loadPositionDetail("{{ p.id }}", "{{ p.name|e }}")'>
+        Chi tiết
+      </button>
+    </td>
+
           </td>
         </tr>
+        
         {% endfor %}
       </tbody>
     </table>
   </div>
 </div>
+
+<!-- Modal chi tiết chức vụ -->
+<!-- Các modal riêng -->
+<div class="modal fade" id="positionDetailModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-info text-white">
+        <h5 class="modal-title" id="positionTitle">Chi tiết Chức vụ</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <table class="table">
+          <thead>
+            <tr><th>Mã NV</th><th>Họ Tên</th><th>Phòng Ban</th><th>Trạng Thái</th></tr>
+          </thead>
+          <tbody id="positionEmployeeList">
+            <!-- JS sẽ gán dữ liệu vào đây -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 
 <!-- Modal thêm chức vụ -->
 <div class="modal fade" id="addPositionModal" tabindex="-1" aria-hidden="true">
@@ -560,5 +595,37 @@
         modal.show();
       }
     </script>
+   <script>
+  function loadPositionDetail(id, name) {
+    document.getElementById("positionTitle").innerText = "Chi tiết Chức vụ: " + name;
+    const tbody = document.getElementById("positionEmployeeList");
+    tbody.innerHTML = `<tr><td colspan="4">Đang tải...</td></tr>`;
+
+    fetch(`/chuc-vu/${id}/nhan-vien`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="4">Không có nhân viên nào.</td></tr>`;
+        } else {
+          tbody.innerHTML = "";
+          data.forEach(e => {
+            tbody.innerHTML += `
+              <tr>
+                <td>${e.id}</td>
+                <td>${e.name}</td>
+                <td>${e.department}</td>
+                <td>${e.status}</td>
+              </tr>`;
+          });
+        }
+        const modal = new bootstrap.Modal(document.getElementById("positionDetailModal"));
+        modal.show();
+      });
+  }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+
   </body>
 </html>

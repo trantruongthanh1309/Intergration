@@ -325,36 +325,7 @@
   </div>
 </div>
 
-        <!-- Gửi email thông báo lương -->
-        <div class="card mt-4">
-          <div class="card-header bg-success text-white">
-            <i class="fas fa-envelope"></i> Gửi email thông báo lương tháng này
-            từ <strong>PAYROLL</strong>
-          </div>
-          <div class="card-body">
-          <ul>
-              {% for email in ds_email_gui_luong %}
-  <li>Đã gửi email thông báo lương cho <strong>{{ email }}</strong></li>
-{% else %}
-  <li>Không có email nào được gửi.</li>
-{% endfor %}
-
-            </ul>
-            {% if bang_luong_ca_nhan %}
-    <hr>
-    <h5 class="text-primary">📬 Nội dung bạn đã nhận:</h5>
-    <ul>
-      <li><strong>Tháng lương:</strong> {{ bang_luong_ca_nhan.SalaryMonth.strftime('%Y-%m') }}</li>
-      <li><strong>Lương cơ bản:</strong> {{ "{:,.0f}".format(bang_luong_ca_nhan.BaseSalary) }} VND</li>
-      <li><strong>Thưởng:</strong> {{ "{:,.0f}".format(bang_luong_ca_nhan.Bonus) }} VND</li>
-      <li><strong>Khấu trừ:</strong> {{ "{:,.0f}".format(bang_luong_ca_nhan.Deductions) }} VND</li>
-      <li><strong>Lương thực nhận:</strong> {{ "{:,.0f}".format(bang_luong_ca_nhan.NetSalary) }} VND</li>
-    </ul>
-{% endif %}
-          </div>
-        </div>
-      </div>
-    </div>
+      
   
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
