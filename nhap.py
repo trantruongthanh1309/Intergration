@@ -8,24 +8,11 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from datetime import timedelta, datetime
 import config
-from flask_mail import Mail, Message
-import random
-import string
-import time
-import os
+import json
 
 app = Flask(__name__)
-app.secret_key = 'x3$9#1yPqT!vN8*7zLd@fG2kWmS'
+app.secret_key = 'your_secret_key'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'truongga471@gmail.com'
-app.config['MAIL_PASSWORD'] = 'eguwsubamvrferrz' 
-
-mail = Mail(app)
-ma_xac_thuc = None
-thoi_gian_gui = None
 
 # Cấu hình kết nối SQL Server và MySQL
 app.config["SQLALCHEMY_BINDS"] = {
@@ -75,6 +62,8 @@ class EmployeeSQL(db.Model):
     __bind_key__ = "default"
 
     EmployeeID = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    Username = db.Column(db.String(50), unique=True, nullable=False)
+    Password = db.Column(db.String(255), nullable=False)
     FullName = db.Column(db.String(100))
     DepartmentID = db.Column(db.Integer, db.ForeignKey("departments.DepartmentID"))
     PositionID = db.Column(db.Integer, db.ForeignKey("positions.PositionID"))
@@ -84,15 +73,13 @@ class EmployeeSQL(db.Model):
     Gender = db.Column(db.String(10))
     JoinDate = db.Column(db.Date)
 
-    department = db.relationship("DepartmentSQL", backref="employees")
-    position = db.relationship("PositionSQL", backref="employees")
-    attendances = db.relationship('AttendanceSQL', backref='employee', cascade='all, delete-orphan')
-
 class EmployeeMySQL(db.Model):
     __bind_key__ = 'mysql'
     __tablename__ = "employees"
 
     EmployeeID = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    Username = db.Column(db.String(50), unique=True, nullable=False)
+    Password = db.Column(db.String(255), nullable=False)
     FullName = db.Column(db.String(100))
     DepartmentID = db.Column(db.Integer)
     PositionID = db.Column(db.Integer)
@@ -102,31 +89,13 @@ class EmployeeMySQL(db.Model):
     Gender = db.Column(db.String(10))
     JoinDate = db.Column(db.Date)
 
-    department = db.relationship(
-        "DepartmentMySQL",
-        primaryjoin="foreign(EmployeeMySQL.DepartmentID)==DepartmentMySQL.DepartmentID",
-        lazy="joined"
-    )
-    position = db.relationship(
-        "PositionMySQL",
-        primaryjoin="foreign(EmployeeMySQL.PositionID)==PositionMySQL.PositionID",
-        lazy="joined"
-    )
-    attendances = db.relationship(
-        "AttendanceMySQL",
-        primaryjoin="EmployeeMySQL.EmployeeID==AttendanceMySQL.EmployeeID",
-        cascade="all, delete-orphan",
-        lazy="joined"
-    )
-
 
 class AttendanceMySQL(db.Model):
     __tablename__ = "attendance"
     __bind_key__ = "mysql"
 
     AttendanceID = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    EmployeeID = db.Column(db.Integer, db.ForeignKey("employees.EmployeeID", ondelete='CASCADE'))  # CHỈ KHAI BÁO 1 LẦN
-    
+    EmployeeID = db.Column(db.Integer)
     WorkDays = db.Column(db.Integer, nullable=False)
     AbsentDays = db.Column(db.Integer, default=0)
     LeaveDays = db.Column(db.Integer, default=0)
@@ -145,7 +114,7 @@ class AttendanceSQL(db.Model):
     LeaveDays = db.Column(db.Integer, default=0)
     AttendanceMonth = db.Column(db.Date, nullable=False)
     CreatedAt = db.Column(db.DateTime, default=db.func.now())
-    EmployeeID = db.Column(db.Integer, db.ForeignKey("employees.EmployeeID", ondelete='CASCADE'))
+
 
 class SalaryMySQL(db.Model):
     __tablename__ = "salaries"
@@ -176,7 +145,7 @@ class SalarySQL(db.Model):
 
     employee = db.relationship('EmployeeSQL', backref='salary_records')
 
-import json
+
 # Lớp User
 class User(db.Model):
     __bind_key__ = 'default'
@@ -190,20 +159,12 @@ class User(db.Model):
     phone_number = db.Column(db.String(15), nullable=True)
     address = db.Column(db.String(255), nullable=True)
     birth_date = db.Column(db.Date, nullable=True)
-    FaceEncoding = db.Column(db.Text)  # Thêm trường lưu face encoding dạng JSON string
 
     role = db.relationship('Role', backref=db.backref('users', lazy=True))
 
-    def set_face_encoding(self, encoding):
-        self.FaceEncoding = json.dumps(encoding.tolist())
-
-    def get_face_encoding(self):
-        if self.FaceEncoding:
-            return np.array(json.loads(self.FaceEncoding))
-        return None
-
     def __repr__(self):
         return f'<User {self.username}>'
+
 
 class Role(db.Model):
     __tablename__ = 'roles'
@@ -297,26 +258,9 @@ def view_profile():
     return render_template('view_profile.html', user=user)
 
 
-from flask import request, redirect, url_for, session, flash
-
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['GET'])
 def login():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-
-        user = User.query.filter_by(username=username).first()
-        if user and user.password == password:
-            session['user_id'] = user.user_id
-            session['role'] = user.role.role_code
-            session['logged_in'] = True
-            flash('Đăng nhập thành công!', 'success')
-            return redirect(url_for('cai_dat'))
-        else:
-            flash('Sai tên đăng nhập hoặc mật khẩu', 'danger')
     return render_template('login.html')
-
-
 
 
 @app.route("/home")
@@ -597,17 +541,9 @@ def cap_nhat_nhan_vien(ma_nv):
 
 @app.route("/xoa-nhan-vien/<int:ma_nv>")
 def xoa_nhan_vien(ma_nv):
-    # Xóa bảng lương của nhân viên
-    SalarySQL.query.filter_by(EmployeeID=ma_nv).delete()
-    SalaryMySQL.query.filter_by(EmployeeID=ma_nv).delete()
-
-    # Xóa chấm công của nhân viên
-    AttendanceSQL.query.filter_by(EmployeeID=ma_nv).delete()
-    AttendanceMySQL.query.filter_by(EmployeeID=ma_nv).delete()
-
-    # Xóa nhân viên
     nv_sql = EmployeeSQL.query.get(ma_nv)
     nv_mysql = EmployeeMySQL.query.get(ma_nv)
+
     if nv_sql:
         db.session.delete(nv_sql)
     if nv_mysql:
@@ -615,7 +551,6 @@ def xoa_nhan_vien(ma_nv):
 
     db.session.commit()
     return redirect(url_for("quan_li_nhan_su"))
-
 
 
 @app.route("/quan_li_tai_chinh")
@@ -1068,6 +1003,26 @@ def cham_cong_ho_so():
     return redirect(url_for("ho_so"))
 
 
+@app.route("/cai-dat", methods=["GET", "POST"])
+def cai_dat():
+    role = session.get("role")
+    permissions = {
+        "ADMIN": [
+            "quan_li_tai_chinh",
+            "quan_li_nhan_su",
+            "bao_cao_tai_chinh",
+            "phong_ban_chuc_vu",
+            "ho_so",
+        ],
+        "HRM": ["quan_li_nhan_su", "phong_ban_chuc_vu", "ho_so"],
+        "PM": ["quan_li_tai_chinh", "bao_cao_tai_chinh", "ho_so"],
+        "EMP": ["ho_so"],
+    }
+    user_permissions = permissions.get(role, [])
+    if request.method == "POST":
+        # Cập nhật cài đặt nếu có
+        return redirect(url_for("cai_dat"))
+    return render_template("cai_dat.html", role=role, user_permissions=user_permissions)
 
 from datetime import date, timedelta
 from collections import defaultdict
@@ -1086,17 +1041,10 @@ def canh_bao_thong_bao():
     # 1. Cảnh báo kỷ niệm công tác (30 ngày tới)
     today = date.today()
     days_ahead = 30
-# Lấy tất cả nhân viên cả 2 DB
+
     employees_sql = EmployeeSQL.query.all()
     employees_mysql = EmployeeMySQL.query.all()
-
-    # Gộp trùng theo EmployeeID
-    all_employees_dict = {}
-    for emp in employees_sql + employees_mysql:
-        if emp.EmployeeID not in all_employees_dict:
-            all_employees_dict[emp.EmployeeID] = emp
-    all_employees = list(all_employees_dict.values())
-
+    all_employees = employees_sql + employees_mysql
 
     thong_bao_ky_niem = []
     for emp in all_employees:
@@ -1175,7 +1123,7 @@ def canh_bao_thong_bao():
                 })
     # 4. Danh sách email đã gửi (giả định)
     ds_email_gui_luong = []  # Cần tích hợp email gửi thực tế nếu có
-    ds_email_gui_luong = session.pop('ds_email_gui_luong', [])  # chỉ hiển thị 1 lần
+
     return render_template("canh_bao_thong_bao.html",
                            thong_bao_ky_niem=thong_bao_ky_niem,
                            vuot_ngay_phep=vuot_ngay_phep,
@@ -1747,15 +1695,14 @@ def get_employees_by_department(department_id):
     emps_sql = EmployeeSQL.query.filter_by(DepartmentID=department_id).all()
     emps_mysql = EmployeeMySQL.query.filter_by(DepartmentID=department_id).all()
 
-    # Dùng dict để gộp, key là EmployeeID (ưu tiên dữ liệu SQL Server nếu trùng)
-    merged_emps = {}
-    for emp in emps_mysql:
-        merged_emps[emp.EmployeeID] = emp
-    for emp in emps_sql:
-        merged_emps[emp.EmployeeID] = emp  # Ghi đè nếu trùng
+    print(f"SQL employees: {len(emps_sql)}")
+    print(f"MySQL employees: {len(emps_mysql)}")
+
+    employees = emps_sql + emps_mysql
 
     data = []
-    for e in merged_emps.values():
+    for e in employees:
+        print(f"Employee: {e.EmployeeID} - {e.FullName}")
         data.append({
             "EmployeeID": e.EmployeeID,
             "FullName": e.FullName,
@@ -1765,70 +1712,42 @@ def get_employees_by_department(department_id):
 
     return jsonify(data)
 
-
-import re
-import base64
-import io
-import numpy as np
-from PIL import Image
+import dlib
 import face_recognition
-from flask import jsonify
-
-from flask import request, jsonify, session
 import numpy as np
 import base64
-import io
-import face_recognition
-from PIL import Image
 import re
-
+known_image = face_recognition.load_image_file("WIN_20250525_01_11_31_Pro.jpg")
+known_encoding = face_recognition.face_encodings(known_image)[0]
 @app.route('/api/face-login', methods=['POST'])
 def face_login():
-    try:
-        data = request.get_json()  # Nhận ảnh từ frontend
-        img_data = data.get('image')
-        if not img_data:
-            return jsonify({'success': False, 'message': 'Không nhận được dữ liệu ảnh'}), 400
+    data = request.json
+    img_data = data.get("image")
 
-        # Xử lý ảnh base64
-        img_str = re.sub('^data:image/.+;base64,', '', img_data)
-        img_bytes = base64.b64decode(img_str)
-        img = Image.open(io.BytesIO(img_bytes))
-        img_np = np.array(img)
+    # Xử lý ảnh base64 data URL
+    img_str = re.sub('^data:image/.+;base64,', '', img_data)
+    img_bytes = base64.b64decode(img_str)
 
-        encodings = face_recognition.face_encodings(img_np)
-        if not encodings:
-            return jsonify({'success': False, 'message': 'Không phát hiện khuôn mặt'}), 400
-        unknown_encoding = encodings[0]
+    # Lưu tạm ảnh gửi lên hoặc chuyển sang numpy array
+    # Dùng face_recognition để load ảnh từ bytes
+    import io
+    from PIL import Image
 
-        # Truy vấn tất cả người dùng và FaceEncoding của họ
-        users = User.query.filter(User.FaceEncoding.isnot(None)).all()
+    img = Image.open(io.BytesIO(img_bytes))
+    img_np = np.array(img)
 
-        for user in users:
-            # Chuyển FaceEncoding từ string (hoặc bytes) thành numpy array
-            known_encoding = np.array(eval(user.FaceEncoding))  # Sử dụng json.loads() nếu lưu dạng JSON
+    # Tìm encoding khuôn mặt trong ảnh gửi lên
+    face_encodings = face_recognition.face_encodings(img_np)
+    if len(face_encodings) == 0:
+        return jsonify({"success": False, "message": "Không phát hiện khuôn mặt"}), 400
 
-            # So sánh khuôn mặt
-            matches = face_recognition.compare_faces([known_encoding], unknown_encoding, tolerance=0.6)
-            if matches[0]:  # Nếu trùng khớp
-                # Lưu thông tin đăng nhập vào session
-                session['logged_in'] = True
-                session['user_id'] = user.user_id
-                session['username'] = user.username
-                session['role'] = user.role_id
+    # So sánh với encoding đã biết
+    match_results = face_recognition.compare_faces([known_encoding], face_encodings[0])
 
-                # Đăng nhập thành công
-                return jsonify({
-                    'success': True,
-                    'message': 'Đăng nhập thành công',
-                    'redirect': '/home'  # Gửi URL trang đích đến frontend
-                })
-
-        return jsonify({'success': False, 'message': 'Khuôn mặt không khớp với bất kỳ tài khoản nào'}), 401
-
-    except Exception as e:
-        return jsonify({'success': False, 'message': 'Lỗi server: ' + str(e)}), 500
-
+    if match_results[0]:
+        return jsonify({"success": True, "message": "Đăng nhập thành công!"})
+    else:
+        return jsonify({"success": False, "message": "Khuôn mặt không khớp!"}), 401
     
 @app.route('/api/register-user', methods=['POST'], endpoint='register_user')
 def register_user():
@@ -1927,226 +1846,6 @@ def api_login_face():
         return jsonify({'success': True, 'message': 'Đăng nhập thành công', 'employee_id': matched_emp.EmployeeID})
 
     return jsonify({'success': False, 'message': 'Khuôn mặt không khớp'}), 401
-
-from werkzeug.security import check_password_hash, generate_password_hash
-
-@app.route("/cai-dat", methods=["GET", "POST"])
-def cai_dat():
-    role = session.get("role")
-    user_id = session.get("user_id")
-    employee_id = session.get("employee_id")
-    user = User.query.get(user_id)
-    employee = EmployeeSQL.query.get(employee_id)
-    if not employee:
-        employee = EmployeeMySQL.query.get(employee_id)
-
-    permissions = {
-        "ADMIN": ["quan_li_tai_chinh", "quan_li_nhan_su", "bao_cao_tai_chinh", "phong_ban_chuc_vu", "ho_so"],
-        "HRM": ["quan_li_nhan_su", "phong_ban_chuc_vu", "ho_so"],
-        "PM": ["quan_li_tai_chinh", "bao_cao_tai_chinh", "ho_so"],
-        "EMP": ["ho_so"],
-    }
-    user_permissions = permissions.get(role, [])
-
-    if request.method == "POST":
-        old_password = request.form.get("oldPassword")
-        new_password = request.form.get("newPassword")
-
-        if user and user.password and check_password_hash(user.password, old_password):
-            user.password = generate_password_hash(new_password)
-            db.session.commit()
-            flash("Mật khẩu đã được thay đổi thành công", "success")
-        else:
-            flash("Mật khẩu cũ không chính xác", "danger")
-
-    return render_template("cai_dat.html", role=role, user_permissions=user_permissions, user=user, employee=employee)
-
-
-    
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email.header import Header
-import smtplib
-import random
-import string
-from datetime import datetime, timedelta
-
-# Khai báo biến toàn cục ở ngoài hàm
-verification_codes = {}
-
-@app.route("/send-verification-code", methods=["POST"])
-def send_verification_code():
-    try:
-        data = request.get_json()
-        email = data.get('email')
-
-        if not email:
-            return jsonify({'success': False, 'error': 'Email không hợp lệ'}), 400
-
-        code = ''.join(random.choices(string.digits, k=6))
-        verification_codes[email] = {'code': code, 'expires_at': datetime.now() + timedelta(minutes=10)}
-
-        sender_email = "truongga471@gmail.com"
-        sender_password = "eguwsubamvrferrz"
-
-
-        msg = MIMEMultipart()
-        msg['From'] = sender_email
-        msg['To'] = email
-        msg['Subject'] = Header("Mã xác nhận đổi mật khẩu", 'utf-8')
-
-        body = f"Đây là mã xác nhận của bạn: {code}"
-        msg.attach(MIMEText(body, 'plain', 'utf-8'))
-
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
-            server.login(sender_email, sender_password)
-            server.sendmail(sender_email, email, msg.as_bytes())  # Gửi dưới dạng bytes
-
-        return jsonify({'success': True}), 200
-
-    except Exception as e:
-        print(f"Error occurred: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-@app.route('/change_password', methods=['POST'])
-def change_password():
-    data = request.json or request.form
-    email = data.get('email')
-    new_password = data.get('password')
-    entered_code = data.get('verificationCode')
-
-    if not email or not new_password or not entered_code:
-        return jsonify({'success': False, 'message': 'Thiếu dữ liệu yêu cầu'}), 400
-
-    # Lấy mã xác nhận đúng từ dictionary verification_codes
-    code_info = verification_codes.get(email)
-    if not code_info:
-        return jsonify({'success': False, 'message': 'Chưa gửi mã xác nhận hoặc mã đã hết hạn.'}), 400
-
-    # Kiểm tra mã còn hiệu lực không
-    if datetime.now() > code_info['expires_at']:
-        del verification_codes[email]  # Xóa mã hết hạn
-        return jsonify({'success': False, 'message': 'Mã xác nhận đã hết hạn.'}), 400
-
-    # So sánh mã xác nhận
-    if entered_code != code_info['code']:
-        return jsonify({'success': False, 'message': 'Mã xác nhận không chính xác.'}), 400
-
-    # Tìm user theo email trực tiếp từ DB
-    user = User.query.filter_by(email=email).first()
-    if not user:
-        return jsonify({'success': False, 'message': 'Người dùng không tồn tại.'}), 404
-
-    # Cập nhật mật khẩu mới (hash)
-    user.password = generate_password_hash(new_password)
-    db.session.commit()
-
-    # Xóa mã xác nhận đã dùng
-    del verification_codes[email]
-
-    return jsonify({'success': True, 'message': 'Mật khẩu đã được thay đổi.'})
-
-@app.route('/gui-email-luong/<int:employee_id>')
-def gui_email_luong(employee_id):
-    emp = EmployeeSQL.query.get(employee_id) or EmployeeMySQL.query.get(employee_id)
-    user = User.query.get(employee_id)
-    salary = SalarySQL.query.filter_by(EmployeeID=employee_id).order_by(SalarySQL.SalaryMonth.desc()).first()
-
-    if not (emp and user and salary and user.email):
-        return "Không đủ dữ liệu để gửi email.", 400
-
-    msg = Message(
-        subject=f"[PAYROLL] Bảng lương tháng {salary.SalaryMonth.strftime('%Y-%m')}",
-        sender="your_email@gmail.com",
-        recipients=[user.email]
-    )
-
-    msg.html = render_template('email_template.html', emp=emp, salary=salary)
-    mail.send(msg)
-
-    return f"Đã gửi bảng lương cho {emp.FullName} qua email {user.email}"
-
-@app.route('/gui-email-toan-bo')
-def gui_email_toan_bo():
-    employees = EmployeeSQL.query.all() + EmployeeMySQL.query.all()
-    users = {u.user_id: u for u in User.query.all()}
-    count = 0
-
-    for emp in employees:
-        user = users.get(emp.EmployeeID)
-        if not user or not user.email:
-            continue
-
-        salary = SalarySQL.query.filter_by(EmployeeID=emp.EmployeeID).order_by(SalarySQL.SalaryMonth.desc()).first()
-        if not salary:
-            continue
-
-        msg = Message(
-            subject=f"[PAYROLL] Bảng lương tháng {salary.SalaryMonth.strftime('%Y-%m')}",
-            sender=app.config['MAIL_USERNAME'],
-            recipients=[user.email]
-        )
-        msg.html = f"""
-        <p>Chào {emp.FullName},</p>
-        <p>Lương tháng {salary.SalaryMonth.strftime('%Y-%m')}:</p>
-        <ul>
-          <li>Lương cơ bản: {salary.BaseSalary:,.0f} VND</li>
-          <li>Thưởng: {salary.Bonus:,.0f} VND</li>
-          <li>Khấu trừ: {salary.Deductions:,.0f} VND</li>
-          <li><strong>Lương thực nhận: {salary.NetSalary:,.0f} VND</strong></li>
-        </ul>
-        <p>Phòng Nhân sự</p>
-        """
-        try:
-            mail.send(msg)
-            count += 1
-        except Exception as e:
-            continue
-
-    return f"✅ Đã gửi email cho {count} nhân viên."
-
-@app.route('/gui-email-da-chon', methods=['POST'])
-def gui_email_da_chon():
-    data = request.get_json()
-    ids = data.get("ids", [])
-    users = {u.user_id: u for u in User.query.all()}
-    count = 0
-
-    for eid in ids:
-        eid = int(eid)
-        emp = EmployeeSQL.query.get(eid) or EmployeeMySQL.query.get(eid)
-        user = users.get(eid)
-        if not emp or not user or not user.email:
-            continue
-
-        salary = SalarySQL.query.filter_by(EmployeeID=eid).order_by(SalarySQL.SalaryMonth.desc()).first()
-        if not salary:
-            continue
-
-        msg = Message(
-            subject=f"[PAYROLL] Bảng lương tháng {salary.SalaryMonth.strftime('%Y-%m')}",
-            sender=app.config['MAIL_USERNAME'],
-            recipients=[user.email]
-        )
-        msg.html = f"""
-        <p>Chào {emp.FullName},</p>
-        <p>Bảng lương tháng {salary.SalaryMonth.strftime('%Y-%m')}:</p>
-        <ul>
-          <li>Lương cơ bản: {salary.BaseSalary:,.0f} VND</li>
-          <li>Thưởng: {salary.Bonus:,.0f} VND</li>
-          <li>Khấu trừ: {salary.Deductions:,.0f} VND</li>
-          <li><strong>Lương thực nhận: {salary.NetSalary:,.0f} VND</strong></li>
-        </ul>
-        <p>Trân trọng,<br>Phòng Nhân sự</p>
-        """
-        try:
-            mail.send(msg)
-            count += 1
-        except:
-            continue
-
-    return f"✅ Đã gửi email cho {count} nhân viên được chọn."
-
 
 if __name__ == "__main__":
     app.run(debug=True)

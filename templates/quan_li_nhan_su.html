@@ -199,7 +199,7 @@
     </a>
     
     <a href="{{ url_for('canh_bao_thong_bao') }}"><i class="fas fa-bell"></i> Cảnh Báo Và Thông Báo</a>
-    <a href="{{ url_for('cai_dat') }}"><i class="fas fa-cogs"></i> Cài Đặt</a>
+    <a href="{{ url_for('cai_dat') }}" ><i class="fas fa-user"></i> Tài Khoản</a>
     <a href="{{ url_for('dang_xuat') }}"><i class="fas fa-sign-out-alt"></i> Đăng Xuất</a>
       
     </div>
@@ -253,31 +253,50 @@
     
         <table class="table table-striped table-hover" id="employeeTable">
           <thead>
-            <tr>
-              <th>Mã NV</th>
-              <th>Họ Tên</th>
-              <th>Phòng Ban</th>
-              <th>Chức Vụ</th>
-              <th>Trạng Thái</th>
-              <th>Hành Động</th>
-            </tr>
-          </thead>
+  <tr>
+    <th>Mã NV</th>
+    <th>Họ Tên</th>
+    <th>Phòng Ban</th>
+    <th>Chức Vụ</th>
+    <th>Trạng Thái</th>
+    <th>Email</th>
+    <th>Ngày sinh</th>
+    <th>Giới tính</th>
+    <th>Ngày vào làm</th>
+    <th>Hành Động</th>
+  </tr>
+</thead>
+
           <tbody>
             {% for nv in nhan_viens %}
             <tr>
               <td>{{ nv.EmployeeID }}</td>
-              <td>{{ nv.FullName }}</td>
-              <td>{{ nv.DepartmentName }}</td>
-              <td>{{ nv.PositionName }}</td>
-
-              <td>{{ nv.Status }}</td>
+    <td>{{ nv.FullName }}</td>
+    <td>{{ nv.DepartmentName }}</td>
+    <td>{{ nv.PositionName }}</td>
+    <td>{{ nv.Status }}</td>
+    <td>{{ nv.Email }}</td>
+    <td>{{ nv.BirthDate.strftime('%d/%m/%Y') if nv.BirthDate else '' }}</td>
+    <td>{{ nv.Gender }}</td>
+    <td>{{ nv.JoinDate.strftime('%d/%m/%Y') if nv.JoinDate else '' }}</td>
               <td>
                 <a href="#" class="btn btn-warning btn-sm"
-                data-bs-toggle="modal"
-                data-bs-target="#updateEmployeeModal"
-                onclick="setEmployeeData('{{ nv.EmployeeID }}', '{{ nv.FullName }}', '{{ nv.DepartmentID }}', '{{ nv.PositionID }}', '{{ nv.Status }}')">
-               <i class="fas fa-edit"></i> Cập Nhật
-             </a>
+   data-bs-toggle="modal"
+   data-bs-target="#updateEmployeeModal"
+   onclick="setEmployeeData(
+       '{{ nv.EmployeeID }}',
+       '{{ nv.FullName }}',
+       '{{ nv.DepartmentID }}',
+       '{{ nv.PositionID }}',
+       '{{ nv.Status }}',
+       '{{ nv.Email }}',
+       '{{ nv.BirthDate}}',
+       '{{ nv.Gender }}',
+       '{{ nv.JoinDate  }}'
+   )">
+  <i class="fas fa-edit"></i> Cập Nhật
+</a>
+
              
                 <a href="{{ url_for('xoa_nhan_vien', ma_nv=nv.EmployeeID) }}" class="btn btn-danger btn-sm"
                   onclick="return confirm('Bạn có chắc chắn muốn xóa nhân viên này?');">
@@ -325,6 +344,19 @@
               {% endfor %}
             </select>
           </div>
+<div class="mb-3">
+  <label>Khuôn mặt:</label>
+  <div class="text-center mb-2">
+    <video id="updateFaceVideo" autoplay muted playsinline
+      style="width: 320px; height: 240px; border: 1px solid #ddd; border-radius: 8px;">
+    </video>
+  </div>
+  <div class="d-flex justify-content-between">
+    <button type="button" id="btnOpenCamera" class="btn btn-info">Mở Camera Khuôn Mặt</button>
+    <button type="button" id="btnCaptureFaceUpdate" class="btn btn-success">Chụp & Gửi</button>
+  </div>
+  <div id="updateFaceMessage" class="mt-2"></div>
+</div>
 
           <div class="mb-3">
             <label class="form-label">Trạng Thái:</label>
@@ -333,6 +365,35 @@
               <option value="Nghỉ việc">Nghỉ việc</option>
             </select>
           </div>
+<!-- Email -->
+<div class="mb-3">
+  <label>Email:</label>
+  <input type="email" name="email" id="update_email" class="form-control" required />
+</div>
+
+<!-- Ngày sinh -->
+<div class="mb-3">
+  <label>Ngày sinh:</label>
+  <input type="date" name="birth_date" id="update_birth_date" class="form-control" />
+</div>
+
+<!-- Giới tính -->
+<div class="mb-3">
+  <label>Giới tính:</label>
+  <select name="gender" id="update_gender" class="form-select">
+    <option value="" disabled>Chọn giới tính</option>
+    <option value="Nam">Nam</option>
+    <option value="Nữ">Nữ</option>
+    <option value="Khác">Khác</option>
+  </select>
+</div>
+
+<!-- Ngày vào làm -->
+<div class="mb-3">
+  <label>Ngày vào làm:</label>
+  <input type="date" name="join_date" id="update_join_date" class="form-control" />
+</div>
+
 
           <div class="mb-3">
             <label class="form-label">Tài Khoản:</label>
@@ -352,7 +413,7 @@
               {% endfor %}
             </select>
           </div>
-
+          
         </div>
         <div class="modal-footer">
           <button type="submit" class="btn btn-success">
@@ -412,6 +473,36 @@
               <option value="Nghỉ việc">Nghỉ việc</option>
             </select>
           </div>
+          <!-- Email -->
+<div class="mb-3">
+  <label>Email:</label>
+  <input type="email" name="email" id="update_email" class="form-control" required />
+</div>
+
+<!-- Ngày sinh -->
+<div class="mb-3">
+  <label>Ngày sinh:</label>
+  <input type="date" name="birth_date" id="update_birth_date" class="form-control" />
+</div>
+
+<!-- Giới tính -->
+<div class="mb-3">
+  <label>Giới tính:</label>
+  <select name="gender" id="update_gender" class="form-select">
+    <option value="" disabled>Chọn giới tính</option>
+    <option value="Nam">Nam</option>
+    <option value="Nữ">Nữ</option>
+    <option value="Khác">Khác</option>
+  </select>
+</div>
+
+<!-- Ngày vào làm -->
+<div class="mb-3">
+  <label>Ngày vào làm:</label>
+  <input type="date" name="join_date" id="update_join_date" class="form-control" />
+</div>
+
+
           <div class="mb-3">
           <label for="username" class="form-label">Tên tài khoản</label>
           <input type="text" class="form-control" name="username" id="username" required>
@@ -486,16 +577,83 @@
     </form>
   </div>
 </div>
+<script>
+  const videoUpdate = document.getElementById("updateFaceVideo");
+  const btnOpenCamera = document.getElementById("btnOpenCamera");
+  const btnCaptureFaceUpdate = document.getElementById("btnCaptureFaceUpdate");
+  const updateFaceMessage = document.getElementById("updateFaceMessage");
+
+  let streamUpdate = null;
+
+  btnOpenCamera.onclick = async () => {
+    try {
+      streamUpdate = await navigator.mediaDevices.getUserMedia({ video: true });
+      videoUpdate.srcObject = streamUpdate;
+      updateFaceMessage.textContent = "Camera đã mở, chuẩn bị chụp ảnh...";
+      updateFaceMessage.style.color = "black";
+    } catch (err) {
+      updateFaceMessage.textContent = "Lỗi mở camera: " + err.message;
+      updateFaceMessage.style.color = "red";
+    }
+  };
+
+  btnCaptureFaceUpdate.onclick = async () => {
+    if (!streamUpdate) {
+      updateFaceMessage.textContent = "Vui lòng mở camera trước.";
+      updateFaceMessage.style.color = "red";
+      return;
+    }
+
+    // Chụp ảnh từ video
+    const canvas = document.createElement("canvas");
+    canvas.width = videoUpdate.videoWidth;
+    canvas.height = videoUpdate.videoHeight;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(videoUpdate, 0, 0, canvas.width, canvas.height);
+    const imageData = canvas.toDataURL("image/jpeg");
+
+    updateFaceMessage.textContent = "Đang gửi ảnh khuôn mặt...";
+
+    // Lấy employee_id từ input hidden hoặc nơi lưu
+    const employee_id = document.getElementById("update_employee_id").value;
+
+    try {
+      const response = await fetch(`/api/register-face/${employee_id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: imageData }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        updateFaceMessage.style.color = "green";
+        updateFaceMessage.textContent = data.message;
+      } else {
+        updateFaceMessage.style.color = "red";
+        updateFaceMessage.textContent = data.message;
+      }
+    } catch (error) {
+      updateFaceMessage.style.color = "red";
+      updateFaceMessage.textContent = "Lỗi kết nối: " + error.message;
+    }
+  };
+</script>
 
 <script>
-  function setEmployeeData(id, name, dept, pos, status) {
-    document.getElementById("update_employee_id").value = id;
-    document.getElementById("update_ho_ten").value = name;
-    document.getElementById("update_phong_ban").value = dept;
-    document.getElementById("update_chuc_vu").value = pos;
-    document.getElementById("update_trang_thai").value = status;
-    document.querySelector("#updateEmployeeModal form").action = "/cap-nhat-nhan-vien/" + id;
-  }
+ function setEmployeeData(id, name, dept, pos, status, email, birth_date, gender, join_date) {
+  document.getElementById("update_employee_id").value = id;
+  document.getElementById("update_ho_ten").value = name;
+  document.getElementById("update_phong_ban").value = dept;
+  document.getElementById("update_chuc_vu").value = pos;
+  document.getElementById("update_trang_thai").value = status;
+  document.getElementById("update_email").value = email || '';
+  document.getElementById("update_birth_date").value = birth_date || '';
+  document.getElementById("update_gender").value = gender || '';
+  document.getElementById("update_join_date").value = join_date || '';
+
+  document.querySelector("#updateEmployeeModal form").action = "/cap-nhat-nhan-vien/" + id;
+}
+
 </script>
 
 <script>

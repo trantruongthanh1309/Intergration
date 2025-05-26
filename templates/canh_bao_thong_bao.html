@@ -233,7 +233,7 @@
       </a>
       
       <a href="{{ url_for('canh_bao_thong_bao') }}"class="active"><i class="fas fa-bell"></i> Cảnh Báo Và Thông Báo</a>
-      <a href="{{ url_for('cai_dat') }}"><i class="fas fa-cogs"></i> Cài Đặt</a>
+      <a href="{{ url_for('cai_dat') }}" ><i class="fas fa-user"></i> Tài Khoản</a>
       <a href="{{ url_for('dang_xuat') }}"><i class="fas fa-sign-out-alt"></i> Đăng Xuất</a>
       
     </div>
@@ -305,7 +305,26 @@
             </ul>
           </div>
         </div>
-  
+        
+        
+        <!-- Thông báo sinh nhật sắp đến -->
+<div class="card mt-4">
+  <div class="card-header bg-info text-white">
+    <i class="fas fa-birthday-cake"></i> Nhân viên sắp đến sinh nhật trong 30 ngày tới
+  </div>
+  <div class="card-body">
+    <ul>
+      {% for nv in thong_bao_sinh_nhat %}
+      <li>
+        <strong>{{ nv.FullName }}</strong> sẽ sinh nhật vào ngày {{ nv.birthday }}
+      </li>
+      {% else %}
+      <li>Không có nhân viên nào sắp sinh nhật.</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
         <!-- Gửi email thông báo lương -->
         <div class="card mt-4">
           <div class="card-header bg-success text-white">
@@ -313,15 +332,25 @@
             từ <strong>PAYROLL</strong>
           </div>
           <div class="card-body">
-            <ul>
+          <ul>
               {% for email in ds_email_gui_luong %}
-              <li>
-                Đã gửi email thông báo lương cho <strong>{{ email }}</strong>
-              </li>
-              {% else %}
-              <li>Không có email nào được gửi.</li>
-              {% endfor %}
+  <li>Đã gửi email thông báo lương cho <strong>{{ email }}</strong></li>
+{% else %}
+  <li>Không có email nào được gửi.</li>
+{% endfor %}
+
             </ul>
+            {% if bang_luong_ca_nhan %}
+    <hr>
+    <h5 class="text-primary">📬 Nội dung bạn đã nhận:</h5>
+    <ul>
+      <li><strong>Tháng lương:</strong> {{ bang_luong_ca_nhan.SalaryMonth.strftime('%Y-%m') }}</li>
+      <li><strong>Lương cơ bản:</strong> {{ "{:,.0f}".format(bang_luong_ca_nhan.BaseSalary) }} VND</li>
+      <li><strong>Thưởng:</strong> {{ "{:,.0f}".format(bang_luong_ca_nhan.Bonus) }} VND</li>
+      <li><strong>Khấu trừ:</strong> {{ "{:,.0f}".format(bang_luong_ca_nhan.Deductions) }} VND</li>
+      <li><strong>Lương thực nhận:</strong> {{ "{:,.0f}".format(bang_luong_ca_nhan.NetSalary) }} VND</li>
+    </ul>
+{% endif %}
           </div>
         </div>
       </div>

@@ -164,6 +164,27 @@
           <a href="/forgot-password">Quên mật khẩu?</a>
         </div>
       </form>
+      <hr />
+      <h5 class="text-center">Hoặc đăng nhập bằng khuôn mặt</h5>
+      <div class="text-center mb-3">
+        <video
+          id="video"
+          autoplay
+          muted
+          playsinline
+          style="
+            width: 320px;
+            height: 240px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+          "
+        ></video
+        ><br />
+        <button id="btnFaceLogin" class="btn btn-info mt-2">
+          Đăng nhập bằng khuôn mặt
+        </button>
+      </div>
+      <div id="faceLoginMessage" class="text-center mb-3"></div>
 
       <div class="form-footer">
         <p>Chưa có tài khoản? <a href="/register">Đăng ký</a></p>
@@ -177,6 +198,128 @@
       {% endfor %}
     </ul>
     {% endif %} {% endwith %}
+    <script>
+      const video = document.getElementById("video");
+      const btnFaceLogin = document.getElementById("btnFaceLogin");
+      const faceLoginMessage = document.getElementById("faceLoginMessage");
+
+      async function startWebcam() {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+          });
+          video.srcObject = stream;
+        } catch (err) {
+          faceLoginMessage.textContent = "Lỗi khi mở webcam: " + err;
+          faceLoginMessage.style.color = "red";
+        }
+      }
+
+      btnFaceLogin.onclick = async () => {
+        faceLoginMessage.textContent = "Đang chụp ảnh và đăng nhập...";
+        faceLoginMessage.style.color = "black";
+
+        // Chụp ảnh từ webcam
+        const canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = canvas.toDataURL("image/jpeg");
+
+        try {
+          // Gửi ảnh khuôn mặt lên backend để so sánh
+          const response = await fetch("/api/face-login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ image: imageData }),
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            faceLoginMessage.style.color = "green";
+            faceLoginMessage.textContent = data.message;
+
+            // Nếu nhận được URL redirect, chuyển hướng đến trang chủ
+            if (data.redirect) {
+              window.location.href = data.redirect; // Chuyển hướng đến trang chủ
+            }
+          } else {
+            faceLoginMessage.style.color = "red";
+            faceLoginMessage.textContent = data.message;
+          }
+        } catch (error) {
+          faceLoginMessage.style.color = "red";
+          faceLoginMessage.textContent = "Lỗi kết nối: " + error.message;
+        }
+      };
+
+      startWebcam();
+    </script>
+
+    <script>
+      const videoRegister = document.getElementById("videoRegister");
+      const btnCaptureFace = document.getElementById("btnCaptureFace");
+      const registerFaceMessage = document.getElementById(
+        "registerFaceMessage"
+      );
+
+      // Bật webcam khi nhấn nút Đăng ký khuôn mặt
+      document.getElementById("btnRegisterFace").onclick = async () => {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+          });
+          videoRegister.srcObject = stream;
+          registerFaceMessage.textContent = "Mở camera, chuẩn bị chụp ảnh...";
+        } catch (err) {
+          registerFaceMessage.textContent = "Lỗi mở camera: " + err;
+          registerFaceMessage.style.color = "red";
+        }
+      };
+
+      btnCaptureFace.onclick = async () => {
+        if (!videoRegister.srcObject) {
+          registerFaceMessage.textContent = "Vui lòng bật camera trước.";
+          registerFaceMessage.style.color = "red";
+          return;
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = videoRegister.videoWidth;
+        canvas.height = videoRegister.videoHeight;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(videoRegister, 0, 0, canvas.width, canvas.height);
+
+        const imageData = canvas.toDataURL("image/jpeg");
+
+        registerFaceMessage.textContent = "Đang gửi ảnh đăng ký...";
+
+        try {
+          // Thay employee_id bằng ID thực tế
+          localStorage.setItem("employee_id", response.employee_id);
+
+          const response = await fetch(`/api/register-face/${employee_id}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ image: imageData }),
+          });
+          const data = await response.json();
+
+          if (data.success) {
+            registerFaceMessage.style.color = "green";
+            registerFaceMessage.textContent = data.message;
+          } else {
+            registerFaceMessage.style.color = "red";
+            registerFaceMessage.textContent = data.message;
+          }
+        } catch (error) {
+          registerFaceMessage.style.color = "red";
+          registerFaceMessage.textContent = "Lỗi kết nối: " + error.message;
+        }
+      };
+    </script>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

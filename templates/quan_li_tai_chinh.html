@@ -242,7 +242,7 @@
     </a>
     
     <a href="{{ url_for('canh_bao_thong_bao') }}"><i class="fas fa-bell"></i> Cảnh Báo Và Thông Báo</a>
-    <a href="{{ url_for('cai_dat') }}"><i class="fas fa-cogs"></i> Cài Đặt</a>
+    <a href="{{ url_for('cai_dat') }}" ><i class="fas fa-user"></i> Tài Khoản</a>
     <a href="{{ url_for('dang_xuat') }}"><i class="fas fa-sign-out-alt"></i> Đăng Xuất</a>
 
     </div>
@@ -294,6 +294,14 @@
 <a href="{{ url_for('xuat_luong_chamcong') }}" class="btn btn-success mb-3">
   <i class="fas fa-file-excel"></i> Xuất Excel
 </a>
+  <button class="btn btn-warning" onclick="guiEmailToanBo()">
+    📧 Gửi Email Cho Tất Cả Nhân Viên
+  </button>
+  <button class="btn btn-info" onclick="guiEmailDaChon()">
+    📩 Gửi Email Cho Nhân Viên Được Chọn
+  </button>
+
+
 
 
         <!-- BẢNG LƯƠNG -->
@@ -302,6 +310,7 @@
 
   <thead>
   <tr>
+    <th>Chọn</th>
     <th>Mã Lương</th>
     <th>Mã NV</th>
     <th>Tháng</th>
@@ -317,6 +326,7 @@
   <tbody>
   {% for r in records %}
 <tr>
+  <td><input type="checkbox" class="chon-email" value="{{ r.EmployeeID }}"></td>
   <td>{{ r.SalaryID }}</td>
   <td>{{ r.EmployeeID }}</td>
   <td>{{ r.SalaryMonth[:7] if r.SalaryMonth else '' }}</td>
@@ -563,9 +573,32 @@ function filterSalaries() {
   });
 }
 </script>
+<script>
+function guiEmailToanBo() {
+  if (!confirm("Bạn có chắc muốn gửi email lương cho tất cả nhân viên?")) return;
+  fetch("/gui-email-toan-bo")
+    .then(res => res.text())
+    .then(alert)
+    .catch(err => alert("Lỗi khi gửi email!"));
+}
 
-
-
+function guiEmailDaChon() {
+  const selected = [...document.querySelectorAll(".chon-email:checked")]
+    .map(cb => cb.value);
+  if (selected.length === 0) {
+    alert("Vui lòng chọn ít nhất một nhân viên.");
+    return;
+  }
+  fetch("/gui-email-da-chon", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ids: selected })
+  })
+  .then(res => res.text())
+  .then(alert)
+  .catch(err => alert("Lỗi khi gửi email!"));
+}
+</script>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
